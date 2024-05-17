@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections.abc import Sequence, Mapping
+from pathlib import Path
 
 str_type = str
 
@@ -230,7 +231,7 @@ def lintify_meta_yaml(
     # 4: The recipe should have some tests.
     if not any(key in TEST_KEYS for key in test_section):
         a_test_file_exists = recipe_dir is not None and any(
-            os.path.exists(os.path.join(recipe_dir, test_file))
+            Path(os.path.join(recipe_dir, test_file)).exists()
             for test_file in TEST_FILES
         )
         if not a_test_file_exists:
@@ -260,7 +261,7 @@ def lintify_meta_yaml(
         lints.append("The recipe license cannot be unknown.")
 
     # 6: Selectors should be in a tidy form.
-    if recipe_dir is not None and os.path.exists(meta_fname):
+    if recipe_dir is not None and Path(meta_fname).exists():
         bad_selectors, bad_lines = [], []
         pyXY_selectors_lint, pyXY_lines_lint = [], []
         pyXY_selectors_hint, pyXY_lines_hint = [], []
@@ -347,7 +348,7 @@ def lintify_meta_yaml(
         )
 
     # 11: There should be one empty line at the end of the file.
-    if recipe_dir is not None and os.path.exists(meta_fname):
+    if recipe_dir is not None and Path(meta_fname).exists():
         with io.open(meta_fname, "r") as f:
             lines = f.read().split("\n")
         # Count the number of empty lines from the end of the file
@@ -462,7 +463,7 @@ def lintify_meta_yaml(
         forge_yaml = {}
 
     # 18: noarch doesn't work with selectors for runtime dependencies
-    if noarch_value is not None and os.path.exists(meta_fname):
+    if noarch_value is not None and Path(meta_fname).exists():
         noarch_platforms = len(forge_yaml.get("noarch_platforms", [])) > 1
         with io.open(meta_fname, "rt") as fh:
             in_runreqs = False
@@ -506,7 +507,7 @@ def lintify_meta_yaml(
             )
 
     # 20: Jinja2 variable definitions should be nice.
-    if recipe_dir is not None and os.path.exists(meta_fname):
+    if recipe_dir is not None and Path(meta_fname).exists():
         bad_jinja = []
         bad_lines = []
         # Good Jinja2 variable definitions look like "{% set .+ = .+ %}"
@@ -620,7 +621,7 @@ def lintify_meta_yaml(
                         )
 
     # 24: jinja2 variable references should be {{<one space>var<one space>}}
-    if recipe_dir is not None and os.path.exists(meta_fname):
+    if recipe_dir is not None and Path(meta_fname).exists():
         bad_vars = []
         bad_lines = []
         with io.open(meta_fname, "rt") as fh:
@@ -1160,7 +1161,7 @@ def run_conda_forge_specific(meta, recipe_dir, lints, hints):
             os.path.join(recipe_dir, "..", "example", "meta.yaml")
         )
 
-        if not os.path.exists(example_meta_fname):
+        if not Path(example_meta_fname).exists():
             msg = (
                 "Please do not delete the example recipe found in "
                 "`recipes/example/meta.yaml`."
@@ -1324,7 +1325,7 @@ def _format_validation_msg(error: "jsonschema.ValidationError"):
 def main(recipe_dir, conda_forge=False, return_hints=False):
     recipe_dir = os.path.abspath(recipe_dir)
     recipe_meta = os.path.join(recipe_dir, "meta.yaml")
-    if not os.path.exists(recipe_dir):
+    if not Path(recipe_dir).exists():
         raise IOError("Feedstock has no recipe/meta.yaml.")
 
     with io.open(recipe_meta, "rt") as fh:

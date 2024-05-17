@@ -1,6 +1,7 @@
 import argparse
 import collections
 import os
+from pathlib import Path
 import subprocess
 from textwrap import dedent
 
@@ -171,8 +172,8 @@ def test_render_readme_with_multiple_outputs(testing_workdir, dirname):
         temporary_directory=os.path.join(recipe, "temp"),
     )
     regen_obj(args)
-    readme_path = os.path.join(feedstock_dir, "README.md")
-    assert os.path.exists(readme_path)
+    readme_path = Path(feedstock_dir) / "README.md"
+    assert readme_path.exists()
     with open(readme_path, "r") as readme_file:
         readme = readme_file.read()
     if dirname == "multiple_outputs":

@@ -1,6 +1,7 @@
 import copy
 import logging
 import os
+from pathlib import Path
 import re
 import shutil
 import textwrap
@@ -192,11 +193,7 @@ def test_py_matrix_on_github(py_recipe, jinja_env):
     assert os.path.isdir(matrix_dir)
     # single matrix entry - readme is generated later in main function
     assert len(os.listdir(matrix_dir)) == 2
-    assert os.path.exists(
-        os.path.join(
-            py_recipe.recipe, ".github", "workflows", "conda-build.yml"
-        )
-    )
+    assert Path(py_recipe.recipe, ".github", "workflows", "conda-build.yml").exists()
 
 
 def test_py_matrix_on_azure(py_recipe, jinja_env):
@@ -425,13 +422,13 @@ def test_circle_osx(py_recipe, jinja_env):
     configure_feedstock.render_circle(
         jinja_env=jinja_env, forge_config=py_recipe.config, forge_dir=forge_dir
     )
-    assert not os.path.exists(circle_osx_file)
-    assert os.path.exists(circle_linux_file)
-    assert os.path.exists(circle_config_file)
+    assert not Path(circle_osx_file).exists()
+    assert Path(circle_linux_file).exists()
+    assert Path(circle_config_file).exists()
     configure_feedstock.render_travis(
         jinja_env=jinja_env, forge_config=py_recipe.config, forge_dir=forge_dir
     )
-    assert os.path.exists(travis_yml_file)
+    assert Path(travis_yml_file).exists()
 
     configure_feedstock.clear_scripts(forge_dir)
     config = copy.deepcopy(py_recipe.config)
@@ -439,13 +436,13 @@ def test_circle_osx(py_recipe, jinja_env):
     configure_feedstock.render_circle(
         jinja_env=jinja_env, forge_config=config, forge_dir=forge_dir
     )
-    assert os.path.exists(circle_osx_file)
-    assert os.path.exists(circle_linux_file)
-    assert os.path.exists(circle_config_file)
+    assert Path(circle_osx_file).exists()
+    assert Path(circle_linux_file).exists()
+    assert Path(circle_config_file).exists()
     configure_feedstock.render_travis(
         jinja_env=jinja_env, forge_config=config, forge_dir=forge_dir
     )
-    assert not os.path.exists(travis_yml_file)
+    assert not Path(travis_yml_file).exists()
 
     configure_feedstock.clear_scripts(forge_dir)
     config = copy.deepcopy(py_recipe.config)
@@ -454,9 +451,9 @@ def test_circle_osx(py_recipe, jinja_env):
     configure_feedstock.render_circle(
         jinja_env=jinja_env, forge_config=config, forge_dir=forge_dir
     )
-    assert os.path.exists(circle_osx_file)
-    assert not os.path.exists(circle_linux_file)
-    assert os.path.exists(circle_config_file)
+    assert Path(circle_osx_file).exists()
+    assert not Path(circle_linux_file).exists()
+    assert Path(circle_config_file).exists()
 
 
 def test_circle_skipped(linux_skipped_recipe, jinja_env):
@@ -474,9 +471,9 @@ def test_circle_skipped(linux_skipped_recipe, jinja_env):
         forge_config=linux_skipped_recipe.config,
         forge_dir=forge_dir,
     )
-    assert not os.path.exists(circle_osx_file)
-    assert not os.path.exists(circle_linux_file)
-    assert os.path.exists(circle_config_file)
+    assert not Path(circle_osx_file).exists()
+    assert not Path(circle_linux_file).exists()
+    assert Path(circle_config_file).exists()
 
     config["provider"]["osx"] = "circle"
 
@@ -484,9 +481,9 @@ def test_circle_skipped(linux_skipped_recipe, jinja_env):
     configure_feedstock.render_circle(
         jinja_env=jinja_env, forge_config=config, forge_dir=forge_dir
     )
-    assert os.path.exists(circle_osx_file)
-    assert not os.path.exists(circle_linux_file)
-    assert os.path.exists(circle_config_file)
+    assert Path(circle_osx_file).exists()
+    assert not Path(circle_linux_file).exists()
+    assert Path(circle_config_file).exists()
 
 
 def test_render_with_all_skipped_generates_readme(skipped_recipe, jinja_env):
@@ -496,7 +493,7 @@ def test_render_with_all_skipped_generates_readme(skipped_recipe, jinja_env):
         forge_dir=skipped_recipe.recipe,
     )
     readme_path = os.path.join(skipped_recipe.recipe, "README.md")
-    assert os.path.exists(readme_path)
+    assert Path(readme_path).exists()
     with open(readme_path, "rb") as readme_file:
         content = readme_file.read()
     assert b"skip-test-meta" in content
@@ -528,7 +525,7 @@ def test_readme_has_terminating_newline(noarch_recipe, jinja_env):
         forge_dir=noarch_recipe.recipe,
     )
     readme_path = os.path.join(noarch_recipe.recipe, "README.md")
-    assert os.path.exists(readme_path)
+    assert Path(readme_path).exists()
     with open(readme_path, "rb") as readme_file:
         readme_file.seek(-1, os.SEEK_END)
         assert readme_file.read() == b"\n"
@@ -638,28 +635,14 @@ def test_migrator_delete_old(recipe_migration_cfep9, jinja_env):
     cfp_migration_dir = os.path.join(
         os.path.dirname(cfp_file), "share", "conda-forge", "migrations"
     )
-    assert os.path.exists(
-        os.path.join(
-            recipe_migration_cfep9.recipe,
-            ".ci_support",
-            "migrations",
-            "zlib.yaml",
-        )
-    )
+    assert Path(recipe_migration_cfep9.recipe, ".ci_support", "migrations", "zlib.yaml").exists()
     os.makedirs(cfp_migration_dir, exist_ok=True)
     configure_feedstock.render_azure(
         jinja_env=jinja_env,
         forge_config=recipe_migration_cfep9.config,
         forge_dir=recipe_migration_cfep9.recipe,
     )
-    assert not os.path.exists(
-        os.path.join(
-            recipe_migration_cfep9.recipe,
-            ".ci_support",
-            "migrations",
-            "zlib.yaml",
-        )
-    )
+    assert not Path(recipe_migration_cfep9.recipe, ".ci_support", "migrations", "zlib.yaml").exists()
 
 
 def test_migrator_downgrade_recipe(
@@ -747,7 +730,7 @@ def test_files_skip_render(render_skipped_recipe, jinja_env):
     ]
     for f in skipped_files:
         fpath = os.path.join(render_skipped_recipe.recipe, f)
-        assert not os.path.exists(fpath)
+        assert not Path(fpath).exists()
 
 
 def test_choco_install(choco_recipe, jinja_env):
@@ -782,9 +765,7 @@ def test_webservices_action_exists(py_recipe, jinja_env):
         forge_config=py_recipe.config,
         forge_dir=py_recipe.recipe,
     )
-    assert os.path.exists(
-        os.path.join(py_recipe.recipe, ".github/workflows/webservices.yml")
-    )
+    assert Path(py_recipe.recipe, ".github/workflows/webservices.yml").exists()
     with open(
         os.path.join(py_recipe.recipe, ".github/workflows/webservices.yml")
     ) as f:
@@ -799,9 +780,7 @@ def test_automerge_action_exists(py_recipe, jinja_env):
         forge_config=py_recipe.config,
         forge_dir=py_recipe.recipe,
     )
-    assert os.path.exists(
-        os.path.join(py_recipe.recipe, ".github/workflows/automerge.yml")
-    )
+    assert Path(py_recipe.recipe, ".github/workflows/automerge.yml").exists()
     with open(
         os.path.join(py_recipe.recipe, ".github/workflows/automerge.yml")
     ) as f:

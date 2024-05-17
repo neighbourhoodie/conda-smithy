@@ -2,6 +2,7 @@ import functools
 import io
 import operator as op
 import os
+from pathlib import Path
 import random
 import stat
 import string
@@ -151,7 +152,7 @@ class TestFeedstockIO(unittest.TestCase):
         for tmp_dir, repo, pathfunc in parameterize():
             for filename in ["test.txt", "dir1/dir2/test.txt"]:
                 dirname = os.path.dirname(filename)
-                if dirname and not os.path.exists(dirname):
+                if dirname and not Path(dirname).exists():
                     os.makedirs(dirname)
 
                 filename = os.path.join(tmp_dir, filename)
@@ -163,10 +164,10 @@ class TestFeedstockIO(unittest.TestCase):
                 if repo is not None:
                     repo.index.add([filename])
 
-                self.assertTrue(os.path.exists(filename))
+                self.assertTrue(Path(filename).exists())
                 if dirname:
-                    self.assertTrue(os.path.exists(dirname))
-                    self.assertTrue(os.path.exists(os.path.dirname(dirname)))
+                    self.assertTrue(Path(dirname).exists())
+                    self.assertTrue(Path(os.path.dirname(dirname)).exists())
                 if repo is not None:
                     self.assertTrue(
                         list(repo.index.iter_blobs(BlobFilter(filename)))
@@ -174,10 +175,10 @@ class TestFeedstockIO(unittest.TestCase):
 
                 fio.remove_file(pathfunc(filename))
 
-                self.assertFalse(os.path.exists(filename))
+                self.assertFalse(Path(filename).exists())
                 if dirname:
-                    self.assertFalse(os.path.exists(dirname))
-                    self.assertFalse(os.path.exists(os.path.dirname(dirname)))
+                    self.assertFalse(Path(dirname).exists())
+                    self.assertFalse(Path(os.path.dirname(dirname)).exists())
                 if repo is not None:
                     self.assertFalse(
                         list(repo.index.iter_blobs(BlobFilter(filename)))
@@ -195,8 +196,8 @@ class TestFeedstockIO(unittest.TestCase):
             with io.open(filename1, "w", encoding="utf-8", newline="\n") as fh:
                 fh.write(write_text)
 
-            self.assertTrue(os.path.exists(filename1))
-            self.assertFalse(os.path.exists(filename2))
+            self.assertTrue(Path(filename1).exists())
+            self.assertFalse(Path(filename2).exists())
             if repo is not None:
                 self.assertFalse(
                     list(repo.index.iter_blobs(BlobFilter(filename2)))
@@ -204,8 +205,8 @@ class TestFeedstockIO(unittest.TestCase):
 
             fio.copy_file(pathfunc(filename1), pathfunc(filename2))
 
-            self.assertTrue(os.path.exists(filename1))
-            self.assertTrue(os.path.exists(filename2))
+            self.assertTrue(Path(filename1).exists())
+            self.assertTrue(Path(filename2).exists())
             if repo is not None:
                 self.assertTrue(
                     list(repo.index.iter_blobs(BlobFilter(filename2)))

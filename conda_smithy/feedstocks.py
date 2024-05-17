@@ -2,6 +2,7 @@ import argparse
 import glob
 import multiprocessing
 import os
+from pathlib import Path
 
 import git
 from git import Repo, GitCommandError
@@ -87,7 +88,7 @@ def clone_feedstock(feedstock_gh_repo, feedstocks_dir):
     repo = feedstock_gh_repo
 
     clone_directory = os.path.join(feedstocks_dir, repo.name)
-    if not os.path.exists(clone_directory):
+    if not Path(clone_directory).exists():
         print("Cloning {}".format(repo.name))
         clone = Repo.clone_from(repo.clone_url, clone_directory)
         clone.delete_remote("origin")

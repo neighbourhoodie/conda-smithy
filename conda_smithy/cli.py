@@ -1,5 +1,6 @@
 import os
 import logging
+from pathlib import Path
 import subprocess
 import sys
 import time
@@ -36,7 +37,7 @@ def generate_feedstock_content(target_directory, source_recipe_dir):
     recipe_dir = "recipe"
     target_recipe_dir = os.path.join(target_directory, recipe_dir)
 
-    if not os.path.exists(target_recipe_dir):
+    if not Path(target_recipe_dir).exists():
         os.makedirs(target_recipe_dir)
     # If there is a source recipe, copy it now to the right dir
     if source_recipe_dir:
@@ -50,14 +51,14 @@ def generate_feedstock_content(target_directory, source_recipe_dir):
             ).with_traceback(sys.exc_info()[2])
 
     forge_yml = default_feedstock_config_path(target_directory)
-    if not os.path.exists(forge_yml):
+    if not Path(forge_yml).exists():
         with feedstock_io.write_file(forge_yml) as fh:
             fh.write("{}")
 
     # merge in the existing configuration in the source recipe directory
     forge_yml_recipe = os.path.join(source_recipe_dir, "conda-forge.yml")
     yaml = YAML()
-    if os.path.exists(forge_yml_recipe):
+    if Path(forge_yml_recipe).exists():
         feedstock_io.remove_file(
             os.path.join(target_recipe_dir, "conda-forge.yml")
         )

@@ -1,5 +1,6 @@
 import os
 import json
+from pathlib import Path
 from unittest import mock
 import time
 
@@ -81,10 +82,10 @@ def test_feedstock_tokens_roundtrip(
 
     try:
         generate_and_write_feedstock_token(user, project, provider=ci)
-        assert os.path.exists(pth)
+        assert Path(pth).exists()
 
         register_feedstock_token(user, project, repo, provider=ci)
-        assert os.path.exists(token_json_pth)
+        assert Path(token_json_pth).exists()
 
         with open(token_json_pth) as fp:
             token_data = json.load(fp)
@@ -102,9 +103,9 @@ def test_feedstock_tokens_roundtrip(
             user, project, feedstock_token, repo, provider=ci
         )
     finally:
-        if os.path.exists(pth):
+        if Path(pth).exists():
             os.remove(pth)
-        if os.path.exists(token_json_pth):
+        if Path(token_json_pth).exists():
             os.remove(token_json_pth)
 
     assert retval is (retval_ci and retval_time)
@@ -211,8 +212,8 @@ def test_generate_and_write_feedstock_token(ci):
     try:
         generate_and_write_feedstock_token(user, repo, provider=ci)
 
-        assert not os.path.exists(opth)
-        assert os.path.exists(pth)
+        assert not Path(opth).exists()
+        assert Path(pth).exists()
 
         if ci is not None:
             generate_and_write_feedstock_token(user, repo, provider=None)
@@ -223,9 +224,9 @@ def test_generate_and_write_feedstock_token(ci):
         with pytest.raises(FeedstockTokenError):
             generate_and_write_feedstock_token(user, repo, provider=ci)
     finally:
-        if os.path.exists(pth):
+        if Path(pth).exists():
             os.remove(pth)
-        if os.path.exists(opth):
+        if Path(opth).exists():
             os.remove(opth)
 
 
@@ -250,7 +251,7 @@ def test_read_feedstock_token(ci):
         assert "Empty token found in" in err
         assert token is None
     finally:
-        if os.path.exists(pth):
+        if Path(pth).exists():
             os.remove(pth)
 
     # token ok
@@ -267,7 +268,7 @@ def test_read_feedstock_token(ci):
         assert "No token found in" in err
         assert token is None
     finally:
-        if os.path.exists(pth):
+        if Path(pth).exists():
             os.remove(pth)
 
 
@@ -423,7 +424,7 @@ def test_register_feedstock_token_works(
         register_feedstock_token(user, project, repo, provider=ci)
 
     finally:
-        if os.path.exists(pth):
+        if Path(pth).exists():
             os.remove(pth)
 
     git_mock.Repo.clone_from.assert_called_once_with(
@@ -493,7 +494,7 @@ def test_register_feedstock_token_notoken(
         with pytest.raises(FeedstockTokenError) as e:
             register_feedstock_token(user, project, repo, provider=ci)
     finally:
-        if os.path.exists(pth):
+        if Path(pth).exists():
             os.remove(pth)
 
     git_mock.Repo.clone_from.assert_not_called()
@@ -504,7 +505,7 @@ def test_register_feedstock_token_notoken(
     repo.remote.return_value.pull.assert_not_called()
     repo.remote.return_value.push.assert_not_called()
 
-    assert not os.path.exists(token_json_pth)
+    assert not Path(token_json_pth).exists()
 
     assert "No token found in" in str(e.value)
 
@@ -551,7 +552,7 @@ def test_register_feedstock_token_append(
         generate_and_write_feedstock_token(user, project, provider=ci)
         register_feedstock_token(user, project, repo, provider=ci)
     finally:
-        if os.path.exists(pth):
+        if Path(pth).exists():
             os.remove(pth)
 
     git_mock.Repo.clone_from.assert_called_once_with(
@@ -715,7 +716,7 @@ def test_register_feedstock_token_with_providers(
     finally:
         for provider in providers:
             pth = feedstock_token_local_path(user, project, provider=provider)
-            if os.path.exists(pth):
+            if Path(pth).exists():
                 os.remove(pth)
 
 
@@ -833,5 +834,5 @@ def test_register_feedstock_token_with_providers_error(
     finally:
         for _provider in providers:
             pth = feedstock_token_local_path(user, project, provider=_provider)
-            if os.path.exists(pth):
+            if Path(pth).exists():
                 os.remove(pth)

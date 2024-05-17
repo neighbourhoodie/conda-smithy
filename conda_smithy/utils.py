@@ -123,7 +123,7 @@ def update_conda_forge_config(forge_yaml):
     >>> with update_conda_forge_config(somepath) as cfg:
     ...     cfg['foo'] = 'bar'
     """
-    if os.path.exists(forge_yaml):
+    if Path(forge_yaml).exists():
         with open(forge_yaml, "r") as fh:
             code = get_yaml().load(fh)
     else:

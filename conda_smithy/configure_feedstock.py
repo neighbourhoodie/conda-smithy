@@ -136,7 +136,7 @@ def copytree(src, dst, ignore=(), root_dst=None):
         if _ignore_match(ignore, rel):
             continue
         elif os.path.isdir(s):
-            if not os.path.exists(d):
+            if not Path(d).exists():
                 os.makedirs(d)
             copytree(s, d, ignore, root_dst=root_dst)
         else:
@@ -550,7 +550,7 @@ def _collapse_subpackage_variants(
     # all metas in list_of_metas come from same recipe, so path is identical
     cbc_path = os.path.join(list_of_metas[0].path, "conda_build_config.yaml")
     has_macdt = False
-    if os.path.exists(cbc_path):
+    if Path(cbc_path).exists():
         with open(cbc_path, "r") as f:
             lines = f.readlines()
         if any(re.match(r"^\s*MACOSX_DEPLOYMENT_TARGET:", x) for x in lines):
@@ -802,7 +802,7 @@ def _get_fast_finish_script(
         forge_dir, forge_config["recipe_dir"], "ff_ci_pr_build.py"
     )
     if provider_name == "appveyor":
-        if os.path.exists(cfbs_fpath):
+        if Path(cfbs_fpath).exists():
             fast_finish_script = "{recipe_dir}\\ff_ci_pr_build".format(
                 recipe_dir=forge_config["recipe_dir"]
             )
@@ -823,7 +823,7 @@ def _get_fast_finish_script(
     else:
         # If the recipe supplies its own ff_ci_pr_build.py script,
         # we use it instead of the global one.
-        if os.path.exists(cfbs_fpath):
+        if Path(cfbs_fpath).exists():
             get_fast_finish_script += (
                 "cat {recipe_dir}/ff_ci_pr_build.py".format(
                     recipe_dir=forge_config["recipe_dir"]
@@ -1069,7 +1069,7 @@ def _render_ci_provider(
                 forge_config["recipe_dir"],
                 "conda_build_config.yaml",
             )
-            if os.path.exists(_recipe_cbc):
+            if Path(_recipe_cbc).exists():
                 os.rename(_recipe_cbc, _recipe_cbc + ".conda.smithy.bak")
 
             channel_sources = migrated_combined_variant_spec.get(
@@ -1087,7 +1087,7 @@ def _render_ci_provider(
                 channel_urls=channel_sources,
             )
         finally:
-            if os.path.exists(_recipe_cbc + ".conda.smithy.bak"):
+            if Path(_recipe_cbc + ".conda.smithy.bak").exists():
                 os.rename(_recipe_cbc + ".conda.smithy.bak", _recipe_cbc)
 
         # render returns some download & reparsing info that we don't care about
@@ -1175,20 +1175,20 @@ def _render_ci_provider(
 
         # If the recipe has its own conda_forge_ci_setup package, then
         # install that
-        if os.path.exists(
+        if Path(
             os.path.join(
                 forge_dir,
                 forge_config["recipe_dir"],
                 "conda_forge_ci_setup",
                 "__init__.py",
             )
-        ) and os.path.exists(
+        ).exists() and Path(
             os.path.join(
                 forge_dir,
                 forge_config["recipe_dir"],
                 "setup.py",
             )
-        ):
+        ).exists():
             forge_config["local_ci_setup"] = True
         else:
             forge_config["local_ci_setup"] = False
@@ -1257,7 +1257,7 @@ def _get_build_setup_line(forge_dir, platform, forge_config):
         )
 
     build_setup = ""
-    if os.path.exists(cfbs_fpath):
+    if Path(cfbs_fpath).exists():
         if platform == "linux":
             build_setup += textwrap.dedent(
                 """\
@@ -1341,7 +1341,7 @@ def generate_yum_requirements(forge_config, forge_dir):
         forge_dir, forge_config["recipe_dir"], "yum_requirements.txt"
     )
     yum_build_setup = ""
-    if os.path.exists(yum_requirements_fpath):
+    if Path(yum_requirements_fpath).exists():
         with open(yum_requirements_fpath) as fh:
             requirements = [
                 line.strip()
@@ -1492,9 +1492,9 @@ def _render_template_exe_files(
         )
         target_fname = os.path.join(forge_dir, template_file)
         new_file_contents = template.render(**forge_config)
-        if target_fname in get_common_scripts(forge_dir) and os.path.exists(
+        if target_fname in get_common_scripts(forge_dir) and Path(
             target_fname
-        ):
+        ).exists():
             with open(target_fname, "r") as fh:
                 old_file_contents = fh.read()
                 if old_file_contents != new_file_contents:
@@ -2035,7 +2035,7 @@ def render_README(jinja_env, forge_config, forge_dir, render_info=None):
     ci_support_path = os.path.join(forge_dir, ".ci_support")
     variants = []
     channel_targets = []
-    if os.path.exists(ci_support_path):
+    if Path(ci_support_path).exists():
         for filename in os.listdir(ci_support_path):
             if filename.endswith(".yaml"):
                 variant_name, _ = os.path.splitext(filename)
@@ -2165,7 +2165,7 @@ def _read_forge_config(forge_dir, forge_yml=None):
     if forge_yml is None:
         forge_yml = os.path.join(forge_dir, "conda-forge.yml")
 
-    if not os.path.exists(forge_yml):
+    if not Path(forge_yml).exists():
         raise RuntimeError(
             f"Could not find config file {forge_yml}."
             " Either you are not rerendering inside the feedstock root (likely)"
@@ -2196,11 +2196,11 @@ def _read_forge_config(forge_dir, forge_yml=None):
 
     # check for conda-smithy 2.x matrix which we can't auto-migrate
     # to conda_build_config
-    if file_config.get("matrix") and not os.path.exists(
+    if file_config.get("matrix") and not Path(
         os.path.join(
             forge_dir, config["recipe_dir"], "conda_build_config.yaml"
         )
-    ):
+    ).exists():
         raise ValueError(
             "Cannot rerender with matrix in conda-forge.yml."
             " Please migrate matrix to conda_build_config.yaml and try again."
@@ -2432,7 +2432,7 @@ def commit_changes(forge_file_directory, commit, cs_ver, cfp_ver, cb_ver):
         )
     logger.info(msg)
 
-    is_git_repo = os.path.exists(os.path.join(forge_file_directory, ".git"))
+    is_git_repo = Path(os.path.join(forge_file_directory, ".git")).exists()
     if is_git_repo:
         has_staged_changes = subprocess.call(
             ["git", "diff", "--cached", "--quiet", "--exit-code"],
@@ -2492,7 +2492,7 @@ def get_cfp_file_path(temporary_directory):
     )
     cf_pinning_ver = pkg.version
 
-    assert os.path.exists(cf_pinning_file)
+    assert Path(cf_pinning_file).exists()
 
     return cf_pinning_file, cf_pinning_ver
 
@@ -2653,7 +2653,7 @@ def set_migration_fns(forge_dir, forge_config):
     migrations_root = os.path.join(forge_dir, ".ci_support", "migrations")
     migrations_in_feedstock = get_migrations_in_dir(migrations_root)
 
-    if not os.path.exists(cfp_migrations_dir):
+    if not Path(cfp_migrations_dir).exists():
         migration_fns = [fn for fn, _, _ in migrations_in_feedstock.values()]
         forge_config["migration_fns"] = migration_fns
         return
@@ -2706,7 +2706,7 @@ def main(
 
     if exclusive_config_file is not None:
         exclusive_config_file = os.path.join(forge_dir, exclusive_config_file)
-        if not os.path.exists(exclusive_config_file):
+        if not Path(exclusive_config_file).exists():
             raise RuntimeError("Given exclusive-config-file not found.")
         cf_pinning_ver = None
 
@@ -2724,7 +2724,7 @@ def main(
 
     copy_feedstock_content(config, forge_dir)
 
-    if os.path.exists(os.path.join(forge_dir, "build-locally.py")):
+    if Path(os.path.join(forge_dir, "build-locally.py")).exists():
         set_exe_file(os.path.join(forge_dir, "build-locally.py"))
 
     clear_variants(forge_dir)

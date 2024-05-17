@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 import io
 import os
+from pathlib import Path
 import shutil
 import stat
 
@@ -49,7 +50,7 @@ def set_exe_file(filename, set_exe=True):
 @contextmanager
 def write_file(filename):
     dirname = os.path.dirname(filename)
-    if dirname and not os.path.exists(dirname):
+    if dirname and not Path(dirname).exists():
         os.makedirs(dirname)
 
     with io.open(filename, "w", encoding="utf-8", newline="\n") as fh:

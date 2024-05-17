@@ -23,6 +23,7 @@ as a secret variable on the CI services. It is also hashed using `scrypt` and
 then uploaded to the token registry (a repo on GitHub).
 """
 
+from pathlib import Path
 import tempfile
 import os
 import json
@@ -87,7 +88,7 @@ def generate_and_write_feedstock_token(user, project, provider=None):
         try:
             token = secrets.token_hex(32)
             pth = feedstock_token_local_path(user, project, provider=provider)
-            if os.path.exists(pth):
+            if Path(pth).exists():
                 failed = True
                 err_msg = (
                     "Token for %s/%s on provider%s is already written locally!"
@@ -140,7 +141,7 @@ def read_feedstock_token(user, project, provider=None):
         user, project, provider=provider
     )
 
-    if not os.path.exists(user_token_pth):
+    if not Path(user_token_pth).exists():
         err_msg = "No token found in '%s'" % user_token_pth
     else:
         with open(user_token_pth, "r") as fp:
@@ -184,7 +185,7 @@ def feedstock_token_exists(user, project, token_repo, provider=None):
                 project + ".json",
             )
 
-            if os.path.exists(token_file):
+            if Path(token_file).exists():
                 with open(token_file, "r") as fp:
                     token_data = json.load(fp)
 
@@ -258,7 +259,7 @@ def is_valid_feedstock_token(
                 project + ".json",
             )
 
-            if os.path.exists(token_file):
+            if Path(token_file).exists():
                 with open(token_file, "r") as fp:
                     token_data = json.load(fp)
 
@@ -350,7 +351,7 @@ def register_feedstock_token(user, project, token_repo, provider=None):
             )
 
             # append the token if needed
-            if os.path.exists(token_file):
+            if Path(token_file).exists():
                 with open(token_file, "r") as fp:
                     token_data = json.load(fp)
                 if "tokens" not in token_data:
