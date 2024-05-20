@@ -48,7 +48,7 @@ def test_init(py_recipe):
     )
     init_obj(args)
     destination = os.path.join(recipe, "py-test-feedstock")
-    assert os.path.isdir(destination)
+    assert Path(destination).is_dir()
 
 
 def test_init_with_custom_config(py_recipe):
@@ -79,7 +79,7 @@ def test_init_with_custom_config(py_recipe):
     )
     init_obj(args)
     destination = os.path.join(recipe, "py-test-feedstock")
-    assert os.path.isdir(destination)
+    assert Path(destination).is_dir()
     data = yaml.safe_load(
         open(os.path.join(destination, "conda-forge.yml"), "r").read()
     )

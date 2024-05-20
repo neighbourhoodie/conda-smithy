@@ -22,7 +22,7 @@ def test_noarch_skips_appveyor(noarch_recipe, jinja_env):
     )
     # this configuration should be skipped
     assert not noarch_recipe.config["appveyor"]["enabled"]
-    assert not os.path.isdir(os.path.join(noarch_recipe.recipe, ".ci_support"))
+    assert not Path(os.path.join(noarch_recipe.recipe, ".ci_support")).is_dir()
 
 
 def test_noarch_skips_travis(noarch_recipe, jinja_env):
@@ -33,7 +33,7 @@ def test_noarch_skips_travis(noarch_recipe, jinja_env):
     )
     # this configuration should be skipped
     assert not noarch_recipe.config["travis"]["enabled"]
-    assert not os.path.isdir(os.path.join(noarch_recipe.recipe, ".ci_support"))
+    assert not Path(os.path.join(noarch_recipe.recipe, ".ci_support")).is_dir()
 
 
 @pytest.mark.legacy_circle
@@ -49,7 +49,7 @@ def test_noarch_runs_on_circle(noarch_recipe, jinja_env):
     # this configuration should be run
     assert noarch_recipe.config["circle"]["enabled"]
     matrix_dir = os.path.join(noarch_recipe.recipe, ".ci_support")
-    assert os.path.isdir(matrix_dir)
+    assert Path(matrix_dir).is_dir()
     # single matrix entry - readme is generated later in main function
     assert len(os.listdir(matrix_dir)) == 1
 
@@ -64,7 +64,7 @@ def test_noarch_runs_on_azure(noarch_recipe, jinja_env):
     # this configuration should be run
     assert noarch_recipe.config["azure"]["enabled"]
     matrix_dir = os.path.join(noarch_recipe.recipe, ".ci_support")
-    assert os.path.isdir(matrix_dir)
+    assert Path(matrix_dir).is_dir()
     # single matrix entry - readme is generated later in main function
     assert len(os.listdir(matrix_dir)) == 1
 
@@ -78,7 +78,7 @@ def test_r_skips_appveyor(r_recipe, jinja_env):
     )
     # this configuration should be skipped
     assert not r_recipe.config["appveyor"]["enabled"]
-    assert not os.path.isdir(os.path.join(r_recipe.recipe, ".ci_support"))
+    assert not Path(os.path.join(r_recipe.recipe, ".ci_support")).is_dir()
 
 
 @pytest.mark.legacy_travis
@@ -93,7 +93,7 @@ def test_r_matrix_travis(r_recipe, jinja_env):
     # this configuration should be run
     assert r_recipe.config["travis"]["enabled"]
     matrix_dir = os.path.join(r_recipe.recipe, ".ci_support")
-    assert os.path.isdir(matrix_dir)
+    assert Path(matrix_dir).is_dir()
     # single matrix entry - readme is generated later in main function
     assert len(os.listdir(matrix_dir)) == 2
 
@@ -110,7 +110,7 @@ def test_r_matrix_on_circle(r_recipe, jinja_env):
     # this configuration should be run
     assert r_recipe.config["circle"]["enabled"]
     matrix_dir = os.path.join(r_recipe.recipe, ".ci_support")
-    assert os.path.isdir(matrix_dir)
+    assert Path(matrix_dir).is_dir()
     # single matrix entry - readme is generated later in main function
     assert len(os.listdir(matrix_dir)) == 2
 
@@ -124,7 +124,7 @@ def test_r_matrix_azure(r_recipe, jinja_env):
     # this configuration should be run
     assert r_recipe.config["azure"]["enabled"]
     matrix_dir = os.path.join(r_recipe.recipe, ".ci_support")
-    assert os.path.isdir(matrix_dir)
+    assert Path(matrix_dir).is_dir()
     # single matrix entry - readme is generated later in main function
     assert len(os.listdir(matrix_dir)) == 4
 
@@ -139,7 +139,7 @@ def test_py_matrix_appveyor(py_recipe, jinja_env):
     # this configuration should be skipped
     assert py_recipe.config["appveyor"]["enabled"]
     matrix_dir = os.path.join(py_recipe.recipe, ".ci_support")
-    assert os.path.isdir(matrix_dir)
+    assert Path(matrix_dir).is_dir()
     # 2 python versions. Recipe uses c_compiler, but this is a zipped key
     #     and shouldn't add extra configurations
     assert len(os.listdir(matrix_dir)) == 2
@@ -157,7 +157,7 @@ def test_py_matrix_travis(py_recipe, jinja_env):
     # this configuration should be run
     assert py_recipe.config["travis"]["enabled"]
     matrix_dir = os.path.join(py_recipe.recipe, ".ci_support")
-    assert os.path.isdir(matrix_dir)
+    assert Path(matrix_dir).is_dir()
     # two matrix enties - one per py ver
     assert len(os.listdir(matrix_dir)) == 2
 
@@ -174,7 +174,7 @@ def test_py_matrix_on_circle(py_recipe, jinja_env):
     # this configuration should be run
     assert py_recipe.config["circle"]["enabled"]
     matrix_dir = os.path.join(py_recipe.recipe, ".ci_support")
-    assert os.path.isdir(matrix_dir)
+    assert Path(matrix_dir).is_dir()
     # single matrix entry - readme is generated later in main function
     assert len(os.listdir(matrix_dir)) == 2
 
@@ -190,7 +190,7 @@ def test_py_matrix_on_github(py_recipe, jinja_env):
     # this configuration should be run
     assert py_recipe.config["github_actions"]["enabled"]
     matrix_dir = os.path.join(py_recipe.recipe, ".ci_support")
-    assert os.path.isdir(matrix_dir)
+    assert Path(matrix_dir).is_dir()
     # single matrix entry - readme is generated later in main function
     assert len(os.listdir(matrix_dir)) == 2
     assert Path(py_recipe.recipe, ".github", "workflows", "conda-build.yml").exists()
@@ -205,7 +205,7 @@ def test_py_matrix_on_azure(py_recipe, jinja_env):
     # this configuration should be run
     assert py_recipe.config["azure"]["enabled"]
     matrix_dir = os.path.join(py_recipe.recipe, ".ci_support")
-    assert os.path.isdir(matrix_dir)
+    assert Path(matrix_dir).is_dir()
     # single matrix entry - readme is generated later in main function
     assert len(os.listdir(matrix_dir)) == 6
 
@@ -219,7 +219,7 @@ def test_stdlib_on_azure(stdlib_recipe, jinja_env):
     # this configuration should be run
     assert stdlib_recipe.config["azure"]["enabled"]
     matrix_dir = os.path.join(stdlib_recipe.recipe, ".ci_support")
-    assert os.path.isdir(matrix_dir)
+    assert Path(matrix_dir).is_dir()
     # find stdlib-config in generated yaml files (plus version, on unix)
     with open(os.path.join(matrix_dir, "linux_64_.yaml")) as f:
         linux_lines = f.readlines()
@@ -259,7 +259,7 @@ def test_stdlib_deployment_target(
     matrix_dir = os.path.join(
         stdlib_deployment_target_recipe.recipe, ".ci_support"
     )
-    assert os.path.isdir(matrix_dir)
+    assert Path(matrix_dir).is_dir()
     with open(os.path.join(matrix_dir, "osx_64_.yaml")) as f:
         lines = f.readlines()
         content = "".join(lines)
@@ -870,7 +870,7 @@ def test_cos7_env_render(py_recipe, jinja_env):
         # this configuration should be run
         assert forge_config["azure"]["enabled"]
         matrix_dir = os.path.join(py_recipe.recipe, ".ci_support")
-        assert os.path.isdir(matrix_dir)
+        assert Path(matrix_dir).is_dir()
         # single matrix entry - readme is generated later in main function
         assert len(os.listdir(matrix_dir)) == 6
 
@@ -901,7 +901,7 @@ def test_cuda_enabled_render(cuda_enabled_recipe, jinja_env):
         # this configuration should be run
         assert forge_config["azure"]["enabled"]
         matrix_dir = os.path.join(cuda_enabled_recipe.recipe, ".ci_support")
-        assert os.path.isdir(matrix_dir)
+        assert Path(matrix_dir).is_dir()
         # single matrix entry - readme is generated later in main function
         assert len(os.listdir(matrix_dir)) == 6
 

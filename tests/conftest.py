@@ -1,5 +1,6 @@
 import collections
 import os
+from pathlib import Path
 from textwrap import dedent
 
 import pytest
@@ -35,7 +36,7 @@ def testing_workdir(tmpdir, request):
     tmpdir.mkdir("prof")
 
     def return_to_saved_path():
-        if os.path.isdir(os.path.join(saved_path, "prof")):
+        if Path(os.path.join(saved_path, "prof")).is_dir():
             profdir = tmpdir.join("prof")
             files = profdir.listdir("*.prof") if profdir.isdir() else []
 
