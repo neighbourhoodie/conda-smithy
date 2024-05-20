@@ -76,7 +76,7 @@ class TestFeedstockIO(unittest.TestCase):
                         for x in string.ascii_lowercase
                     ),
                 )
-                os.makedirs(possible_repo_subdir)
+                Path(possible_repo_subdir).mkdir(parents=True)
                 assert fio.get_repo_root(possible_repo_subdir) == tmp_dir
 
     def test_set_exe_file(self):
@@ -153,7 +153,7 @@ class TestFeedstockIO(unittest.TestCase):
             for filename in ["test.txt", "dir1/dir2/test.txt"]:
                 dirname = os.path.dirname(filename)
                 if dirname and not Path(dirname).exists():
-                    os.makedirs(dirname)
+                    Path(dirname).mkdir(parents=True)
 
                 filename = os.path.join(tmp_dir, filename)
 

@@ -100,7 +100,7 @@ def generate_and_write_feedstock_token(user, project, provider=None):
                 )
                 raise FeedstockTokenError(err_msg)
 
-            os.makedirs(os.path.dirname(pth), exist_ok=True)
+            Path(os.path.dirname(pth)).mkdir(parents=True, exist_ok=True)
 
             with open(pth, "w") as fp:
                 fp.write(token)

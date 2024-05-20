@@ -48,7 +48,7 @@ def _insert_into_gitignore(
         before = after = ""
         dname = os.path.dirname(fname)
         if dname:
-            os.makedirs(dname, exist_ok=True)
+            Path(dname).mkdir(parents=True, exist_ok=True)
     new = prefix + GITIGNORE_ADDITIONAL + suffix
     # write out the file
     with open(fname, "w") as f:

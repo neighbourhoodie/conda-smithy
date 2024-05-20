@@ -38,7 +38,7 @@ def generate_feedstock_content(target_directory, source_recipe_dir):
     target_recipe_dir = os.path.join(target_directory, recipe_dir)
 
     if not Path(target_recipe_dir).exists():
-        os.makedirs(target_recipe_dir)
+        Path(target_recipe_dir).mkdir(parents=True)
     # If there is a source recipe, copy it now to the right dir
     if source_recipe_dir:
         try:
@@ -136,7 +136,7 @@ class Init(Subcommand):
             __version__
         )
 
-        os.makedirs(feedstock_directory)
+        Path(feedstock_directory).mkdir(parents=True)
         subprocess.check_call(["git", "init"], cwd=feedstock_directory)
         generate_feedstock_content(feedstock_directory, args.recipe_directory)
         subprocess.check_call(

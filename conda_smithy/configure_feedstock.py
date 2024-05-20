@@ -137,7 +137,7 @@ def copytree(src, dst, ignore=(), root_dst=None):
             continue
         elif Path(s).is_dir():
             if not Path(d).exists():
-                os.makedirs(d)
+                Path(d).mkdir(parents=True)
             copytree(s, d, ignore, root_dst=root_dst)
         else:
             copy_file(s, d)
@@ -765,7 +765,7 @@ def dump_subspace_config_files(
         out_folder = os.path.join(root_path, ".ci_support")
         out_path = os.path.join(out_folder, config_name) + ".yaml"
         if not Path(out_folder).is_dir():
-            os.makedirs(out_folder)
+            Path(out_folder).mkdir(parents=True)
 
         config = finalize_config(config, platform, arch, forge_config)
         logger.debug(

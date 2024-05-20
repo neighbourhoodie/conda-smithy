@@ -51,7 +51,7 @@ def set_exe_file(filename, set_exe=True):
 def write_file(filename):
     dirname = os.path.dirname(filename)
     if dirname and not Path(dirname).exists():
-        os.makedirs(dirname)
+        Path(dirname).mkdir(parents=True)
 
     with io.open(filename, "w", encoding="utf-8", newline="\n") as fh:
         yield fh

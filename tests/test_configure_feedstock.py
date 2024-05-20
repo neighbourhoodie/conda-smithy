@@ -602,7 +602,7 @@ def test_migrator_cfp_override(recipe_migration_cfep9, jinja_env):
     cfp_migration_dir = os.path.join(
         os.path.dirname(cfp_file), "share", "conda-forge", "migrations"
     )
-    os.makedirs(cfp_migration_dir, exist_ok=True)
+    Path(cfp_migration_dir).mkdir(parents=True, exist_ok=True)
     with open(os.path.join(cfp_migration_dir, "zlib2.yaml"), "w") as f:
         f.write(
             textwrap.dedent(
@@ -636,7 +636,7 @@ def test_migrator_delete_old(recipe_migration_cfep9, jinja_env):
         os.path.dirname(cfp_file), "share", "conda-forge", "migrations"
     )
     assert Path(recipe_migration_cfep9.recipe, ".ci_support", "migrations", "zlib.yaml").exists()
-    os.makedirs(cfp_migration_dir, exist_ok=True)
+    Path(cfp_migration_dir).mkdir(parents=True, exist_ok=True)
     configure_feedstock.render_azure(
         jinja_env=jinja_env,
         forge_config=recipe_migration_cfep9.config,

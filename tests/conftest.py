@@ -57,7 +57,7 @@ def recipe_dirname():
 @pytest.fixture(scope="function")
 def config_yaml(testing_workdir, recipe_dirname):
     config = {"python": ["2.7", "3.5"], "r_base": ["3.3.2", "3.4.2"]}
-    os.makedirs(os.path.join(testing_workdir, recipe_dirname))
+    Path(os.path.join(testing_workdir, recipe_dirname)).mkdir(parents=True)
     with open(os.path.join(testing_workdir, "config.yaml"), "w") as f:
         f.write("docker:\n")
         f.write("  fallback_image:\n")
@@ -85,7 +85,7 @@ def config_yaml(testing_workdir, recipe_dirname):
             )
         )
     # dummy file that needs to be present for circle ci.  This is created by the init function
-    os.makedirs(os.path.join(testing_workdir, ".circleci"))
+    Path(os.path.join(testing_workdir, ".circleci")).mkdir(parents=True)
     with open(
         os.path.join(testing_workdir, ".circleci", "checkout_merge_commit.sh"),
         "w",
@@ -318,9 +318,7 @@ about:
     """
         )
 
-    os.makedirs(
-        os.path.join(config_yaml, ".ci_support", "migrations"), exist_ok=True
-    )
+    Path(os.path.join(config_yaml, ".ci_support", "migrations")).mkdir(parents=True, exist_ok=True)
     with open(
         os.path.join(config_yaml, ".ci_support", "migrations", "zlib.yaml"),
         "w",
@@ -348,9 +346,7 @@ zlib:
 def recipe_migration_cfep9_downgrade(config_yaml, recipe_migration_cfep9):
     # write a downgrade migrator that lives next to the current migrator.
     # Only this, more recent migrator should apply.
-    os.makedirs(
-        os.path.join(config_yaml, ".ci_support", "migrations"), exist_ok=True
-    )
+    Path(os.path.join(config_yaml, ".ci_support", "migrations")).mkdir(parents=True, exist_ok=True)
     with open(
         os.path.join(
             config_yaml, ".ci_support", "migrations", "zlib-downgrade.yaml"
@@ -378,9 +374,7 @@ zlib:
 
 @pytest.fixture(scope="function")
 def recipe_migration_win_compiled(config_yaml, py_recipe):
-    os.makedirs(
-        os.path.join(config_yaml, ".ci_support", "migrations"), exist_ok=True
-    )
+    Path(os.path.join(config_yaml, ".ci_support", "migrations")).mkdir(parents=True, exist_ok=True)
     with open(
         os.path.join(
             config_yaml, ".ci_support", "migrations", "vc-migrate.yaml"

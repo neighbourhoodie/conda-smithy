@@ -78,7 +78,7 @@ def test_feedstock_tokens_roundtrip(
         provider=ci,
     )
     token_json_pth = os.path.join(tmpdir, "tokens", "%s.json" % project)
-    os.makedirs(Path(tmpdir) / "tokens", exist_ok=True)
+    Path(Path(tmpdir) / "tokens").mkdir(parents=True, exist_ok=True)
 
     try:
         generate_and_write_feedstock_token(user, project, provider=ci)
@@ -182,7 +182,7 @@ def test_is_valid_feedstock_token_badtoken(
     feedstock_token = "akdjhfl"
 
     token_pth = Path(tmpdir) / "tokens" / f"{project}.json"
-    os.makedirs(os.path.dirname(token_pth), exist_ok=True)
+    Path(os.path.dirname(token_pth)).mkdir(parents=True, exist_ok=True)
     with open(token_pth, "w") as fp:
         td = {"salt": b"adf".hex(), "hashed_token": b"fgh".hex()}
         if provider is not None:
@@ -325,7 +325,7 @@ def test_feedstock_token_exists(
     )
 
     user = "foo"
-    os.makedirs(Path(tmpdir) / "tokens", exist_ok=True)
+    Path(Path(tmpdir) / "tokens").mkdir(parents=True, exist_ok=True)
     if file_exists:
         with open(
             Path(tmpdir) / "tokens" / f"{project}.json", "w"
@@ -366,7 +366,7 @@ def test_feedstock_token_raises(
 
     git_mock.Repo.clone_from.side_effect = ValueError("blarg")
     user = "foo"
-    os.makedirs(Path(tmpdir) / "tokens", exist_ok=True)
+    Path(Path(tmpdir) / "tokens").mkdir(parents=True, exist_ok=True)
     with open(Path(tmpdir) / "tokens" / f"{project}.json", "w") as fp:
         fp.write("{}")
 
@@ -410,7 +410,7 @@ def test_register_feedstock_token_works(
 
     user = "foo"
     project = "bar"
-    os.makedirs(os.path.join(tmpdir, "tokens"), exist_ok=True)
+    Path(os.path.join(tmpdir, "tokens")).mkdir(parents=True, exist_ok=True)
     pth = feedstock_token_local_path(
         user,
         project,
@@ -482,7 +482,7 @@ def test_register_feedstock_token_notoken(
 
     user = "foo"
     project = "bar"
-    os.makedirs(os.path.join(tmpdir, "tokens"), exist_ok=True)
+    Path(os.path.join(tmpdir, "tokens")).mkdir(parents=True, exist_ok=True)
     pth = feedstock_token_local_path(
         user,
         project,
@@ -538,7 +538,7 @@ def test_register_feedstock_token_append(
 
     user = "foo"
     project = "bar"
-    os.makedirs(os.path.join(tmpdir, "tokens"), exist_ok=True)
+    Path(os.path.join(tmpdir, "tokens")).mkdir(parents=True, exist_ok=True)
     pth = feedstock_token_local_path(
         user,
         project,
