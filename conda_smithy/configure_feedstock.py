@@ -135,7 +135,7 @@ def copytree(src, dst, ignore=(), root_dst=None):
         rel = os.path.relpath(d, root_dst)
         if _ignore_match(ignore, rel):
             continue
-        elif os.path.isdir(s):
+        elif Path(s).is_dir():
             if not Path(d).exists():
                 os.makedirs(d)
             copytree(s, d, ignore, root_dst=root_dst)
@@ -764,7 +764,7 @@ def dump_subspace_config_files(
 
         out_folder = os.path.join(root_path, ".ci_support")
         out_path = os.path.join(out_folder, config_name) + ".yaml"
-        if not os.path.isdir(out_folder):
+        if not Path(out_folder).is_dir():
             os.makedirs(out_folder)
 
         config = finalize_config(config, platform, arch, forge_config)
@@ -2545,7 +2545,7 @@ def get_cached_cfp_file_path(temporary_directory):
 
 def clear_variants(forge_dir):
     "Remove all variant files placed in the .ci_support path"
-    if os.path.isdir(os.path.join(forge_dir, ".ci_support")):
+    if Path(os.path.join(forge_dir, ".ci_support")).is_dir():
         configs = glob.glob(os.path.join(forge_dir, ".ci_support", "*.yaml"))
         for config in configs:
             remove_file(config)

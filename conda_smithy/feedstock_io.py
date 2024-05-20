@@ -67,7 +67,7 @@ def touch_file(filename):
 
 
 def remove_file_or_dir(filename):
-    if not os.path.isdir(filename):
+    if not Path(filename).is_dir():
         return remove_file(filename)
 
     repo = get_repo(filename)

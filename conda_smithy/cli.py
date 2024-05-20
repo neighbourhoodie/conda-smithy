@@ -115,7 +115,7 @@ class Init(Subcommand):
 
     def __call__(self, args):
         # check some error conditions
-        if args.recipe_directory and not os.path.isdir(args.recipe_directory):
+        if args.recipe_directory and not Path(args.recipe_directory).is_dir():
             raise IOError(
                 "The source recipe directory should be the directory of the "
                 "conda-recipe you want to build a feedstock for. Got {}".format(

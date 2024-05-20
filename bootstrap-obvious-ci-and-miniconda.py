@@ -97,7 +97,7 @@ def main(
         raise IOError("Installation directory already exists")
     subprocess.check_call(cmd)
 
-    if not os.path.isdir(target_dir):
+    if not Path(target_dir).is_dir():
         raise RuntimeError("Failed to install miniconda :(")
 
     if install_obvci:
