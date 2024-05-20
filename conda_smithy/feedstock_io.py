@@ -44,7 +44,7 @@ def set_exe_file(filename, set_exe=True):
         mode |= IXALL
     else:
         mode -= mode & IXALL
-    os.chmod(filename, mode)
+    Path(filename).chmod(mode)
 
 
 @contextmanager
