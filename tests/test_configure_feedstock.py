@@ -842,7 +842,7 @@ def test_forge_yml_alt_path(config_yaml):
     )
 
     os.mkdir(os.path.dirname(forge_yml_alt))
-    os.rename(forge_yml, forge_yml_alt)
+    Path(forge_yml).rename(forge_yml_alt)
 
     with pytest.raises(RuntimeError):
         load_forge_config(None)

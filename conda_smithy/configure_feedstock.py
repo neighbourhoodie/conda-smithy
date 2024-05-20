@@ -1070,7 +1070,7 @@ def _render_ci_provider(
                 "conda_build_config.yaml",
             )
             if Path(_recipe_cbc).exists():
-                os.rename(_recipe_cbc, _recipe_cbc + ".conda.smithy.bak")
+                Path(_recipe_cbc).rename(_recipe_cbc + ".conda.smithy.bak")
 
             channel_sources = migrated_combined_variant_spec.get(
                 "channel_sources", [""]
@@ -1088,7 +1088,7 @@ def _render_ci_provider(
             )
         finally:
             if Path(_recipe_cbc + ".conda.smithy.bak").exists():
-                os.rename(_recipe_cbc + ".conda.smithy.bak", _recipe_cbc)
+                Path(_recipe_cbc + ".conda.smithy.bak").rename(_recipe_cbc)
 
         # render returns some download & reparsing info that we don't care about
         metas = [m for m, _, _ in metas]
