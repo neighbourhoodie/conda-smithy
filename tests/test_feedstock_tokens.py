@@ -203,11 +203,11 @@ def test_generate_and_write_feedstock_token(ci):
     repo = "foo"
 
     if ci:
-        pth = os.path.expanduser("~/.conda-smithy/bar_foo_%s.token" % ci)
-        opth = os.path.expanduser("~/.conda-smithy/bar_foo.token")
+        pth = Path("~/.conda-smithy/bar_foo_%s.token" % ci).expanduser()
+        opth = Path("~/.conda-smithy/bar_foo.token").expanduser()
     else:
-        pth = os.path.expanduser("~/.conda-smithy/bar_foo.token")
-        opth = os.path.expanduser("~/.conda-smithy/bar_foo_azure.token")
+        pth = Path("~/.conda-smithy/bar_foo.token").expanduser()
+        opth = Path("~/.conda-smithy/bar_foo_azure.token").expanduser()
 
     try:
         generate_and_write_feedstock_token(user, repo, provider=ci)

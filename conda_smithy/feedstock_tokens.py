@@ -71,7 +71,7 @@ def feedstock_token_local_path(user, project, provider=None):
             ".conda-smithy",
             "%s_%s_%s.token" % (user, project, provider),
         )
-    return os.path.expanduser(pth)
+    return Path(pth).expanduser()
 
 
 def generate_and_write_feedstock_token(user, project, provider=None):
