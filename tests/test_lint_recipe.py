@@ -4,6 +4,7 @@ from collections import OrderedDict
 from contextlib import contextmanager
 import io
 import os
+from pathlib import Path
 import shutil
 import subprocess
 import tempfile
@@ -38,7 +39,7 @@ def test_stdlib_hint(comp_lang):
     expected_message = "This recipe is using a compiler"
 
     with tmp_directory() as recipe_dir:
-        with io.open(os.path.join(recipe_dir, "meta.yaml"), "w") as fh:
+        with io.open(Path(recipe_dir) / "meta.yaml", "w") as fh:
             fh.write(
                 f"""
                 package:

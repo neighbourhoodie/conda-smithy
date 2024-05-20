@@ -101,7 +101,7 @@ def main(
         raise RuntimeError("Failed to install miniconda :(")
 
     if install_obvci:
-        conda_path = os.path.join(target_dir, bin_dir, "conda")
+        conda_path = Path(target_dir) / bin_dir / "conda"
         subprocess.check_call(
             [
                 conda_path,
