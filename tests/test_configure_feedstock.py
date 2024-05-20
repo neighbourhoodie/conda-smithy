@@ -744,7 +744,7 @@ def test_choco_install(choco_recipe, jinja_env):
             choco_recipe.recipe, ".azure-pipelines", "azure-pipelines-win.yml"
         )
     )
-    assert os.path.isfile(azure_file)
+    assert Path(azure_file).is_file()
     with open(azure_file) as f:
         contents = f.read()
     exp = """

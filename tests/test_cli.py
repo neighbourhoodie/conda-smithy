@@ -124,7 +124,7 @@ def test_init_multiple_output_matrix(testing_workdir):
     linux_libpng16 = os.path.join(
         matrix_dir, "linux_64_libpng1.6libpq9.5.yaml"
     )
-    assert os.path.isfile(linux_libpng16)
+    assert Path(linux_libpng16).is_file()
     with open(linux_libpng16) as f:
         config = yaml.safe_load(f)
     assert config["libpng"] == ["1.6"]
@@ -239,7 +239,7 @@ def test_init_cuda_docker_images(testing_workdir):
         fn = os.path.join(
             matrix_dir, f"linux_64_cuda_compiler_version{v}.yaml"
         )
-        assert os.path.isfile(fn)
+        assert Path(fn).is_file()
         with open(fn) as fh:
             config = yaml.safe_load(fh)
         assert config["cuda_compiler"] == ["nvcc"]
@@ -290,7 +290,7 @@ def test_init_multiple_docker_images(testing_workdir):
     matrix_dir_len = len(os.listdir(matrix_dir))
     assert matrix_dir_len == 2
     fn = os.path.join(matrix_dir, "linux_64_.yaml")
-    assert os.path.isfile(fn)
+    assert Path(fn).is_file()
     with open(fn) as fh:
         config = yaml.safe_load(fh)
     assert config["docker_image"] == ["pickme_a"]

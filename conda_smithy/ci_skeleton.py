@@ -39,7 +39,7 @@ def _insert_into_gitignore(
     # get current contents
     fname = str(Path(feedstock_directory) / ".gitignore")
     print("Updating " + fname)
-    if os.path.isfile(fname):
+    if Path(fname).is_file():
         with open(fname, "r") as f:
             s = f.read()
         before, _, s = s.partition(prefix)
