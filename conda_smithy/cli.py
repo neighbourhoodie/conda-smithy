@@ -225,7 +225,7 @@ class RegisterCI(Subcommand):
         scp = self.subcommand_parser
         scp.add_argument(
             "--feedstock_directory",
-            default=feedstock_io.get_repo_root(os.getcwd()) or os.getcwd(),
+            default=feedstock_io.get_repo_root(Path.cwd()) or Path.cwd(),
             help="The directory of the feedstock git repository.",
         )
         scp.add_argument(
@@ -474,7 +474,7 @@ class AddAzureBuildId(Subcommand):
         scp = self.subcommand_parser
         scp.add_argument(
             "--feedstock_directory",
-            default=feedstock_io.get_repo_root(os.getcwd()) or os.getcwd(),
+            default=feedstock_io.get_repo_root(Path.cwd()) or Path.cwd(),
             help="The directory of the feedstock git repository.",
         )
         scp.add_argument(
@@ -538,7 +538,7 @@ class Regenerate(Subcommand):
         scp = self.subcommand_parser
         scp.add_argument(
             "--feedstock_directory",
-            default=feedstock_io.get_repo_root(os.getcwd()) or os.getcwd(),
+            default=feedstock_io.get_repo_root(Path.cwd()) or Path.cwd(),
             help="The directory of the feedstock git repository.",
         )
         scp.add_argument(
@@ -609,7 +609,7 @@ class RecipeLint(Subcommand):
         )
         scp = self.subcommand_parser
         scp.add_argument("--conda-forge", action="store_true")
-        scp.add_argument("recipe_directory", default=[os.getcwd()], nargs="*")
+        scp.add_argument("recipe_directory", default=[Path.cwd()], nargs="*")
 
     def __call__(self, args):
         all_good = True
@@ -683,7 +683,7 @@ class CISkeleton(Subcommand):
         scp = self.subcommand_parser
         scp.add_argument(
             "--feedstock-directory",
-            default=os.getcwd(),
+            default=Path.cwd(),
             help="The directory of the feedstock git repository.",
             dest="feedstock_directory",
         )
@@ -756,7 +756,7 @@ class GenerateFeedstockToken(Subcommand):
         scp = self.subcommand_parser
         scp.add_argument(
             "--feedstock_directory",
-            default=feedstock_io.get_repo_root(os.getcwd()) or os.getcwd(),
+            default=feedstock_io.get_repo_root(Path.cwd()) or Path.cwd(),
             help="The directory of the feedstock git repository.",
         )
         scp.add_argument(
@@ -832,7 +832,7 @@ class RegisterFeedstockToken(Subcommand):
         scp = self.subcommand_parser
         scp.add_argument(
             "--feedstock_directory",
-            default=feedstock_io.get_repo_root(os.getcwd()) or os.getcwd(),
+            default=feedstock_io.get_repo_root(Path.cwd()) or Path.cwd(),
             help="The directory of the feedstock git repository.",
         )
         scp.add_argument(
@@ -979,7 +979,7 @@ class UpdateAnacondaToken(Subcommand):
         scp = self.subcommand_parser
         scp.add_argument(
             "--feedstock_directory",
-            default=feedstock_io.get_repo_root(os.getcwd()) or os.getcwd(),
+            default=feedstock_io.get_repo_root(Path.cwd()) or Path.cwd(),
             help="The directory of the feedstock git repository.",
         )
         scp.add_argument(

@@ -35,7 +35,7 @@ def parameterize():
                 tmp_dir = tempfile.mkdtemp()
                 keep_dir(tmp_dir)
 
-                old_dir = os.getcwd()
+                old_dir = Path.cwd()
                 os.chdir(tmp_dir)
 
                 yield (
@@ -50,7 +50,7 @@ def parameterize():
 
 class TestFeedstockIO(unittest.TestCase):
     def setUp(self):
-        self.old_dir = os.getcwd()
+        self.old_dir = Path.cwd()
 
         self.tmp_dir = tempfile.mkdtemp()
         os.chdir(self.tmp_dir)

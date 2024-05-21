@@ -29,7 +29,7 @@ def testing_workdir(tmpdir, request):
     :param request: py.test fixture-related, will be injected (see pytest docs)
     """
 
-    saved_path = os.getcwd()
+    saved_path = Path.cwd()
 
     tmpdir.chdir()
     # temporary folder for profiling output, if any
