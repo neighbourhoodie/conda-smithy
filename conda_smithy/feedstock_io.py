@@ -83,7 +83,7 @@ def remove_file(filename):
     if repo:
         repo.index.remove([filename])
 
-    os.remove(filename)
+    Path(filename).unlink()
 
     dirname = os.path.dirname(filename)
     if dirname and not os.listdir(dirname):

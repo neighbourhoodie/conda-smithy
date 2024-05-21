@@ -104,9 +104,9 @@ def test_feedstock_tokens_roundtrip(
         )
     finally:
         if Path(pth).exists():
-            os.remove(pth)
+            Path(pth).unlink()
         if Path(token_json_pth).exists():
-            os.remove(token_json_pth)
+            Path(token_json_pth).unlink()
 
     assert retval is (retval_ci and retval_time)
 
@@ -225,9 +225,9 @@ def test_generate_and_write_feedstock_token(ci):
             generate_and_write_feedstock_token(user, repo, provider=ci)
     finally:
         if Path(pth).exists():
-            os.remove(pth)
+            Path(pth).unlink()
         if Path(opth).exists():
-            os.remove(opth)
+            Path(opth).unlink()
 
 
 @pytest.mark.parametrize("ci", [None, "azure"])
@@ -252,7 +252,7 @@ def test_read_feedstock_token(ci):
         assert token is None
     finally:
         if Path(pth).exists():
-            os.remove(pth)
+            Path(pth).unlink()
 
     # token ok
     try:
@@ -269,7 +269,7 @@ def test_read_feedstock_token(ci):
         assert token is None
     finally:
         if Path(pth).exists():
-            os.remove(pth)
+            Path(pth).unlink()
 
 
 @pytest.mark.parametrize(
@@ -425,7 +425,7 @@ def test_register_feedstock_token_works(
 
     finally:
         if Path(pth).exists():
-            os.remove(pth)
+            Path(pth).unlink()
 
     git_mock.Repo.clone_from.assert_called_once_with(
         "abc123",
@@ -495,7 +495,7 @@ def test_register_feedstock_token_notoken(
             register_feedstock_token(user, project, repo, provider=ci)
     finally:
         if Path(pth).exists():
-            os.remove(pth)
+            Path(pth).unlink()
 
     git_mock.Repo.clone_from.assert_not_called()
 
@@ -553,7 +553,7 @@ def test_register_feedstock_token_append(
         register_feedstock_token(user, project, repo, provider=ci)
     finally:
         if Path(pth).exists():
-            os.remove(pth)
+            Path(pth).unlink()
 
     git_mock.Repo.clone_from.assert_called_once_with(
         "abc123",
@@ -717,7 +717,7 @@ def test_register_feedstock_token_with_providers(
         for provider in providers:
             pth = feedstock_token_local_path(user, project, provider=provider)
             if Path(pth).exists():
-                os.remove(pth)
+                Path(pth).unlink()
 
 
 @pytest.mark.parametrize("unique_token_per_provider", [False, True])
@@ -835,4 +835,4 @@ def test_register_feedstock_token_with_providers_error(
         for _provider in providers:
             pth = feedstock_token_local_path(user, project, provider=_provider)
             if Path(pth).exists():
-                os.remove(pth)
+                Path(pth).unlink()
