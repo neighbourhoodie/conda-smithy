@@ -10,7 +10,6 @@ import argparse
 from pathlib import Path
 import platform
 import subprocess
-import sys
 
 try:
     from urllib.request import urlretrieve
