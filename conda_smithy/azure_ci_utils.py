@@ -1,6 +1,7 @@
 import os
 import typing
 import warnings
+from pathlib import Path
 
 from msrest.authentication import Authentication, BasicAuthentication
 from vsts.build.v4_1.build_client import BuildClient
@@ -41,7 +42,7 @@ class AzureConfig:
 
         try:
             with open(
-                os.path.expanduser("~/.conda-smithy/azure.token"), "r"
+                Path("~/.conda-smithy/azure.token").expanduser(), "r"
             ) as fh:
                 self.token = fh.read().strip()
             if not self.token:
