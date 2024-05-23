@@ -1,4 +1,3 @@
-import os
 import logging
 import subprocess
 import sys
@@ -7,6 +6,7 @@ import argparse
 import io
 import tempfile
 
+from pathlib import Path
 from textwrap import dedent
 
 import conda  # noqa
@@ -28,16 +28,16 @@ if sys.version_info[0] == 2:
 
 
 def default_feedstock_config_path(feedstock_directory):
-    return os.path.join(feedstock_directory, "conda-forge.yml")
+    return str(Path(feedstock_directory) / "conda-forge.yml")
 
 
 def generate_feedstock_content(target_directory, source_recipe_dir):
-    target_directory = os.path.abspath(target_directory)
+    target_directory = Path(target_directory).resolve()
     recipe_dir = "recipe"
-    target_recipe_dir = os.path.join(target_directory, recipe_dir)
+    target_recipe_dir = target_directory / recipe_dir
 
-    if not os.path.exists(target_recipe_dir):
-        os.makedirs(target_recipe_dir)
+    if not target_recipe_dir.exists():
+        target_recipe_dir.mkdir(parents=True)
     # If there is a source recipe, copy it now to the right dir
     if source_recipe_dir:
         try:
@@ -50,16 +50,16 @@ def generate_feedstock_content(target_directory, source_recipe_dir):
             ).with_traceback(sys.exc_info()[2])
 
     forge_yml = default_feedstock_config_path(target_directory)
-    if not os.path.exists(forge_yml):
+    if not Path(forge_yml).exists():
         with feedstock_io.write_file(forge_yml) as fh:
             fh.write("{}")
 
     # merge in the existing configuration in the source recipe directory
-    forge_yml_recipe = os.path.join(source_recipe_dir, "conda-forge.yml")
+    forge_yml_recipe = Path(source_recipe_dir) / "conda-forge.yml"
     yaml = YAML()
-    if os.path.exists(forge_yml_recipe):
+    if forge_yml_recipe.exists():
         feedstock_io.remove_file(
-            os.path.join(target_recipe_dir, "conda-forge.yml")
+            Path(target_recipe_dir) / "conda-forge.yml"
         )
         try:
             with open(forge_yml_recipe, "r") as fp:
@@ -114,7 +114,7 @@ class Init(Subcommand):
 
     def __call__(self, args):
         # check some error conditions
-        if args.recipe_directory and not os.path.isdir(args.recipe_directory):
+        if args.recipe_directory and not Path(args.recipe_directory).is_dir():
             raise IOError(
                 "The source recipe directory should be the directory of the "
                 "conda-recipe you want to build a feedstock for. Got {}".format(
@@ -135,7 +135,7 @@ class Init(Subcommand):
             __version__
         )
 
-        os.makedirs(feedstock_directory)
+        Path(feedstock_directory).mkdir(parents=True)
         subprocess.check_call(["git", "init"], cwd=feedstock_directory)
         generate_feedstock_content(feedstock_directory, args.recipe_directory)
         subprocess.check_call(
@@ -224,7 +224,7 @@ class RegisterCI(Subcommand):
         scp = self.subcommand_parser
         scp.add_argument(
             "--feedstock_directory",
-            default=feedstock_io.get_repo_root(os.getcwd()) or os.getcwd(),
+            default=feedstock_io.get_repo_root(Path.cwd()) or Path.cwd(),
             help="The directory of the feedstock git repository.",
         )
         scp.add_argument(
@@ -473,7 +473,7 @@ class AddAzureBuildId(Subcommand):
         scp = self.subcommand_parser
         scp.add_argument(
             "--feedstock_directory",
-            default=feedstock_io.get_repo_root(os.getcwd()) or os.getcwd(),
+            default=feedstock_io.get_repo_root(Path.cwd()) or Path.cwd(),
             help="The directory of the feedstock git repository.",
         )
         scp.add_argument(
@@ -502,7 +502,7 @@ class AddAzureBuildId(Subcommand):
         from conda_smithy import azure_ci_utils
 
         owner = args.user or args.organization
-        repo = os.path.basename(os.path.abspath(args.feedstock_directory))
+        repo = Path(args.feedstock_directory).resolve().name
 
         config = azure_ci_utils.AzureConfig(
             org_or_user=owner, project_name=args.project_name
@@ -537,7 +537,7 @@ class Regenerate(Subcommand):
         scp = self.subcommand_parser
         scp.add_argument(
             "--feedstock_directory",
-            default=feedstock_io.get_repo_root(os.getcwd()) or os.getcwd(),
+            default=feedstock_io.get_repo_root(Path.cwd()) or Path.cwd(),
             help="The directory of the feedstock git repository.",
         )
         scp.add_argument(
@@ -608,13 +608,13 @@ class RecipeLint(Subcommand):
         )
         scp = self.subcommand_parser
         scp.add_argument("--conda-forge", action="store_true")
-        scp.add_argument("recipe_directory", default=[os.getcwd()], nargs="*")
+        scp.add_argument("recipe_directory", default=[Path.cwd()], nargs="*")
 
     def __call__(self, args):
         all_good = True
         for recipe in args.recipe_directory:
             lints, hints = lint_recipe.main(
-                os.path.join(recipe),
+                Path(recipe),
                 conda_forge=args.conda_forge,
                 return_hints=True,
             )
@@ -682,7 +682,7 @@ class CISkeleton(Subcommand):
         scp = self.subcommand_parser
         scp.add_argument(
             "--feedstock-directory",
-            default=os.getcwd(),
+            default=Path.cwd(),
             help="The directory of the feedstock git repository.",
             dest="feedstock_directory",
         )
@@ -755,7 +755,7 @@ class GenerateFeedstockToken(Subcommand):
         scp = self.subcommand_parser
         scp.add_argument(
             "--feedstock_directory",
-            default=feedstock_io.get_repo_root(os.getcwd()) or os.getcwd(),
+            default=feedstock_io.get_repo_root(Path.cwd()) or Path.cwd(),
             help="The directory of the feedstock git repository.",
         )
         scp.add_argument(
@@ -780,7 +780,7 @@ class GenerateFeedstockToken(Subcommand):
         )
 
         owner = args.user or args.organization
-        repo = os.path.basename(os.path.abspath(args.feedstock_directory))
+        repo = Path(args.feedstock_directory).resolve().name
 
         if not args.unique_token_per_provider:
             generate_and_write_feedstock_token(owner, repo)
@@ -831,7 +831,7 @@ class RegisterFeedstockToken(Subcommand):
         scp = self.subcommand_parser
         scp.add_argument(
             "--feedstock_directory",
-            default=feedstock_io.get_repo_root(os.getcwd()) or os.getcwd(),
+            default=feedstock_io.get_repo_root(Path.cwd()) or Path.cwd(),
             help="The directory of the feedstock git repository.",
         )
         scp.add_argument(
@@ -897,7 +897,7 @@ class RegisterFeedstockToken(Subcommand):
             drone_endpoints = [drone_default_endpoint]
 
         owner = args.user or args.organization
-        repo = os.path.basename(os.path.abspath(args.feedstock_directory))
+        repo = Path(args.feedstock_directory).resolve().name
 
         if args.token_repo is None:
             token_repo = (
@@ -978,7 +978,7 @@ class UpdateAnacondaToken(Subcommand):
         scp = self.subcommand_parser
         scp.add_argument(
             "--feedstock_directory",
-            default=feedstock_io.get_repo_root(os.getcwd()) or os.getcwd(),
+            default=feedstock_io.get_repo_root(Path.cwd()) or Path.cwd(),
             help="The directory of the feedstock git repository.",
         )
         scp.add_argument(
@@ -1031,7 +1031,7 @@ class UpdateAnacondaToken(Subcommand):
         from conda_smithy.anaconda_token_rotation import rotate_anaconda_token
 
         owner = args.user or args.organization
-        repo = os.path.basename(os.path.abspath(args.feedstock_directory))
+        repo = Path(args.feedstock_directory).resolve().name
 
         if args.feedstock_config is None:
             args.feedstock_config = default_feedstock_config_path(
