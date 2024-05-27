@@ -36,12 +36,12 @@ def testing_workdir(tmpdir, request):
     tmpdir.mkdir("prof")
 
     def return_to_saved_path():
-        if Path(os.path.join(saved_path, "prof")).is_dir():
+        if saved_path.joinpath("prof").is_dir():
             profdir = tmpdir.join("prof")
             files = profdir.listdir("*.prof") if profdir.isdir() else []
 
             for f in files:
-                copy_into(str(f), os.path.join(saved_path, "prof", f.basename))
+                copy_into(str(f), str(saved_path.joinpath("prof", f.basename)))
         os.chdir(saved_path)
 
     request.addfinalizer(return_to_saved_path)
@@ -57,13 +57,13 @@ def recipe_dirname():
 @pytest.fixture(scope="function")
 def config_yaml(testing_workdir, recipe_dirname):
     config = {"python": ["2.7", "3.5"], "r_base": ["3.3.2", "3.4.2"]}
-    Path(os.path.join(testing_workdir, recipe_dirname)).mkdir(parents=True)
+    Path(testing_workdir).joinpath(recipe_dirname).mkdir(parents=True)
     with open(Path(testing_workdir) / "config.yaml", "w") as f:
         f.write("docker:\n")
         f.write("  fallback_image:\n")
         f.write("  - centos:6\n")
     with open(
-        os.path.join(testing_workdir, recipe_dirname, "default_config.yaml"),
+        Path(testing_workdir).joinpath(recipe_dirname, "default_config.yaml"),
         "w",
     ) as f:
         yaml.dump(config, f, default_flow_style=False)
@@ -85,19 +85,19 @@ def config_yaml(testing_workdir, recipe_dirname):
             )
         )
     # dummy file that needs to be present for circle ci.  This is created by the init function
-    Path(os.path.join(testing_workdir, ".circleci")).mkdir(parents=True)
+    (Path(testing_workdir) / ".circleci").mkdir(parents=True)
     with open(
-        os.path.join(testing_workdir, ".circleci", "checkout_merge_commit.sh"),
+        Path(testing_workdir) / ".circleci" / "checkout_merge_commit.sh",
         "w",
     ) as f:
         f.write("echo dummy file")
     with open(
-        os.path.join(testing_workdir, recipe_dirname, "short_config.yaml"), "w"
+        Path(testing_workdir).joinpath(recipe_dirname, "short_config.yaml"), "w"
     ) as f:
         config = {"python": ["2.7"]}
         yaml.dump(config, f, default_flow_style=False)
     with open(
-        os.path.join(testing_workdir, recipe_dirname, "long_config.yaml"), "w"
+        Path(testing_workdir).joinpath(recipe_dirname, "long_config.yaml"), "w"
     ) as f:
         config = {"python": ["2.7", "3.5", "3.6"]}
         yaml.dump(config, f, default_flow_style=False)
@@ -113,7 +113,7 @@ def config_yaml(testing_workdir, recipe_dirname):
 @pytest.fixture(scope="function")
 def noarch_recipe(config_yaml, recipe_dirname, request):
     with open(
-        os.path.join(config_yaml, recipe_dirname, "meta.yaml"), "w"
+        Path(config_yaml).joinpath(recipe_dirname, "meta.yaml"), "w"
     ) as fh:
         fh.write(
             """
@@ -133,8 +133,8 @@ requirements:
         str(config_yaml),
         _load_forge_config(
             config_yaml,
-            exclusive_config_file=os.path.join(
-                config_yaml, recipe_dirname, "default_config.yaml"
+            exclusive_config_file=str(
+                Path(config_yaml).joinpath(recipe_dirname, "default_config.yaml")
             ),
         ),
     )
@@ -161,8 +161,8 @@ requirements:
         str(config_yaml),
         _load_forge_config(
             config_yaml,
-            exclusive_config_file=os.path.join(
-                config_yaml, "recipe", "default_config.yaml"
+            exclusive_config_file=str(
+                Path(config_yaml) / "recipe" / "default_config.yaml"
             ),
         ),
     )
@@ -191,8 +191,8 @@ about:
         str(config_yaml),
         _load_forge_config(
             config_yaml,
-            exclusive_config_file=os.path.join(
-                config_yaml, "recipe", "default_config.yaml"
+            exclusive_config_file=str(
+                Path(config_yaml) / "recipe" / "default_config.yaml"
             ),
         ),
     )
@@ -217,7 +217,7 @@ about:
     """
         )
     with open(
-        os.path.join(config_yaml, "recipe", "stdlib_config.yaml"), "w"
+        Path(config_yaml) / "recipe" / "stdlib_config.yaml", "w"
     ) as f:
         f.write(
             """\
@@ -236,8 +236,8 @@ c_stdlib_version:               # [unix]
         str(config_yaml),
         _load_forge_config(
             config_yaml,
-            exclusive_config_file=os.path.join(
-                config_yaml, "recipe", "stdlib_config.yaml"
+            exclusive_config_file=str(
+                Path(config_yaml) / "recipe" / "stdlib_config.yaml"
             ),
         ),
     )
@@ -247,7 +247,7 @@ c_stdlib_version:               # [unix]
 def stdlib_deployment_target_recipe(config_yaml, stdlib_recipe):
     # append to existing stdlib_config.yaml from stdlib_recipe
     with open(
-        os.path.join(config_yaml, "recipe", "stdlib_config.yaml"), "a"
+        Path(config_yaml) / "recipe" / "stdlib_config.yaml", "a"
     ) as f:
         f.write(
             """\
@@ -263,8 +263,8 @@ MACOSX_SDK_VERSION:             # [osx]
         str(config_yaml),
         _load_forge_config(
             config_yaml,
-            exclusive_config_file=os.path.join(
-                config_yaml, "recipe", "stdlib_config.yaml"
+            exclusive_config_file=str(
+                Path(config_yaml) / "recipe" / "stdlib_config.yaml"
             ),
         ),
     )
@@ -293,7 +293,7 @@ about:
         str(config_yaml),
         _load_forge_config(
             config_yaml,
-            exclusive_config_file=os.path.join(config_yaml, "conda-forge.yml"),
+            exclusive_config_file=str(Path(config_yaml) / "conda-forge.yml"),
         ),
     )
 
@@ -318,9 +318,9 @@ about:
     """
         )
 
-    Path(os.path.join(config_yaml, ".ci_support", "migrations")).mkdir(parents=True, exist_ok=True)
+    (Path(config_yaml) / ".ci_support" / "migrations").mkdir(parents=True, exist_ok=True)
     with open(
-        os.path.join(config_yaml, ".ci_support", "migrations", "zlib.yaml"),
+        Path(config_yaml) / ".ci_support" / "migrations" / "zlib.yaml",
         "w",
     ) as fh:
         fh.write(
@@ -335,8 +335,8 @@ zlib:
         str(config_yaml),
         _load_forge_config(
             config_yaml,
-            exclusive_config_file=os.path.join(
-                config_yaml, "recipe", "default_config.yaml"
+            exclusive_config_file=str(
+                Path(config_yaml) / "recipe" / "default_config.yaml"
             ),
         ),
     )
@@ -346,11 +346,9 @@ zlib:
 def recipe_migration_cfep9_downgrade(config_yaml, recipe_migration_cfep9):
     # write a downgrade migrator that lives next to the current migrator.
     # Only this, more recent migrator should apply.
-    Path(os.path.join(config_yaml, ".ci_support", "migrations")).mkdir(parents=True, exist_ok=True)
+    (Path(config_yaml) / ".ci_support" / "migrations").mkdir(parents=True, exist_ok=True)
     with open(
-        os.path.join(
-            config_yaml, ".ci_support", "migrations", "zlib-downgrade.yaml"
-        ),
+        Path(config_yaml) / ".ci_support" / "migrations" / "zlib-downgrade.yaml",
         "w",
     ) as fh:
         fh.write(
@@ -365,8 +363,8 @@ zlib:
         str(config_yaml),
         _load_forge_config(
             config_yaml,
-            exclusive_config_file=os.path.join(
-                config_yaml, "recipe", "default_config.yaml"
+            exclusive_config_file=str(
+                Path(config_yaml) / "recipe" / "default_config.yaml"
             ),
         ),
     )
@@ -374,11 +372,9 @@ zlib:
 
 @pytest.fixture(scope="function")
 def recipe_migration_win_compiled(config_yaml, py_recipe):
-    Path(os.path.join(config_yaml, ".ci_support", "migrations")).mkdir(parents=True, exist_ok=True)
+    (Path(config_yaml) / ".ci_support" / "migrations").mkdir(parents=True, exist_ok=True)
     with open(
-        os.path.join(
-            config_yaml, ".ci_support", "migrations", "vc-migrate.yaml"
-        ),
+        Path(config_yaml) / ".ci_support" / "migrations" / "vc-migrate.yaml",
         "w",
     ) as fh:
         fh.write(
@@ -406,8 +402,8 @@ def recipe_migration_win_compiled(config_yaml, py_recipe):
         str(config_yaml),
         _load_forge_config(
             config_yaml,
-            exclusive_config_file=os.path.join(
-                config_yaml, "recipe", "default_config.yaml"
+            exclusive_config_file=str(
+                Path(config_yaml) / "recipe" / "default_config.yaml"
             ),
         ),
     )
@@ -439,8 +435,8 @@ extra:
         str(config_yaml),
         _load_forge_config(
             config_yaml,
-            exclusive_config_file=os.path.join(
-                config_yaml, "recipe", "default_config.yaml"
+            exclusive_config_file=str(
+                Path(config_yaml) / "recipe" / "default_config.yaml"
             ),
         ),
     )
@@ -469,8 +465,8 @@ about:
         str(config_yaml),
         _load_forge_config(
             config_yaml,
-            exclusive_config_file=os.path.join(
-                config_yaml, "recipe", "default_config.yaml"
+            exclusive_config_file=str(
+                Path(config_yaml) / "recipe" / "default_config.yaml"
             ),
         ),
     )
@@ -497,8 +493,8 @@ about:
         str(config_yaml),
         _load_forge_config(
             config_yaml,
-            exclusive_config_file=os.path.join(
-                config_yaml, "recipe", "default_config.yaml"
+            exclusive_config_file=str(
+                Path(config_yaml) / "recipe" / "default_config.yaml"
             ),
         ),
     )
@@ -536,8 +532,8 @@ skip_render:
         str(config_yaml),
         _load_forge_config(
             config_yaml,
-            exclusive_config_file=os.path.join(
-                config_yaml, "recipe", "default_config.yaml"
+            exclusive_config_file=str(
+                Path(config_yaml) / "recipe" / "default_config.yaml"
             ),
         ),
     )
@@ -576,8 +572,8 @@ choco:
         str(config_yaml),
         _load_forge_config(
             config_yaml,
-            exclusive_config_file=os.path.join(
-                config_yaml, "recipe", "default_config.yaml"
+            exclusive_config_file=str(
+                Path(config_yaml) / "recipe" / "default_config.yaml"
             ),
         ),
     )
@@ -609,8 +605,8 @@ about:
         str(config_yaml),
         _load_forge_config(
             config_yaml,
-            exclusive_config_file=os.path.join(
-                config_yaml, "recipe", "default_config.yaml"
+            exclusive_config_file=str(
+                Path(config_yaml) / "recipe" / "default_config.yaml"
             ),
         ),
     )
@@ -618,7 +614,7 @@ about:
 
 @pytest.fixture(scope="function")
 def jinja_env(request):
-    tmplt_dir = os.path.join(conda_forge_content, "templates")
+    tmplt_dir = str(Path(conda_forge_content) / "templates")
     # Load templates from the feedstock in preference to the smithy's templates.
     return SandboxedEnvironment(
         extensions=["jinja2.ext.do"], loader=FileSystemLoader([tmplt_dir])
