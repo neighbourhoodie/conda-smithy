@@ -58,7 +58,7 @@ def recipe_dirname():
 def config_yaml(testing_workdir, recipe_dirname):
     config = {"python": ["2.7", "3.5"], "r_base": ["3.3.2", "3.4.2"]}
     Path(os.path.join(testing_workdir, recipe_dirname)).mkdir(parents=True)
-    with open(os.path.join(testing_workdir, "config.yaml"), "w") as f:
+    with open(Path(testing_workdir) / "config.yaml", "w") as f:
         f.write("docker:\n")
         f.write("  fallback_image:\n")
         f.write("  - centos:6\n")
@@ -101,7 +101,7 @@ def config_yaml(testing_workdir, recipe_dirname):
     ) as f:
         config = {"python": ["2.7", "3.5", "3.6"]}
         yaml.dump(config, f, default_flow_style=False)
-    with open(os.path.join(testing_workdir, "conda-forge.yml"), "w") as f:
+    with open(Path(testing_workdir) / "conda-forge.yml", "w") as f:
         config = {
             "upload_on_branch": "foo-branch",
             "recipe_dir": recipe_dirname,
@@ -142,7 +142,7 @@ requirements:
 
 @pytest.fixture(scope="function")
 def r_recipe(config_yaml, request):
-    with open(os.path.join(config_yaml, "recipe", "meta.yaml"), "w") as fh:
+    with open(Path(config_yaml) / "recipe" / "meta.yaml", "w") as fh:
         fh.write(
             """
 package:
@@ -170,7 +170,7 @@ requirements:
 
 @pytest.fixture(scope="function")
 def py_recipe(config_yaml, request):
-    with open(os.path.join(config_yaml, "recipe", "meta.yaml"), "w") as fh:
+    with open(Path(config_yaml) / "recipe" / "meta.yaml", "w") as fh:
         fh.write(
             """
 package:
@@ -200,7 +200,7 @@ about:
 
 @pytest.fixture(scope="function")
 def stdlib_recipe(config_yaml, request):
-    with open(os.path.join(config_yaml, "recipe", "meta.yaml"), "w") as fh:
+    with open(Path(config_yaml) / "recipe" / "meta.yaml", "w") as fh:
         fh.write(
             """
 package:
@@ -272,7 +272,7 @@ MACOSX_SDK_VERSION:             # [osx]
 
 @pytest.fixture(scope="function")
 def upload_on_branch_recipe(config_yaml, request):
-    with open(os.path.join(config_yaml, "recipe", "meta.yaml"), "w") as fh:
+    with open(Path(config_yaml) / "recipe" / "meta.yaml", "w") as fh:
         fh.write(
             """
 package:
@@ -301,7 +301,7 @@ about:
 @pytest.fixture(scope="function")
 def recipe_migration_cfep9(config_yaml, request):
     # write a migrator
-    with open(os.path.join(config_yaml, "recipe", "meta.yaml"), "w") as fh:
+    with open(Path(config_yaml) / "recipe" / "meta.yaml", "w") as fh:
         fh.write(
             """
 package:
@@ -415,7 +415,7 @@ def recipe_migration_win_compiled(config_yaml, py_recipe):
 
 @pytest.fixture(scope="function")
 def skipped_recipe(config_yaml, request):
-    with open(os.path.join(config_yaml, "recipe", "meta.yaml"), "w") as fh:
+    with open(Path(config_yaml) / "recipe" / "meta.yaml", "w") as fh:
         fh.write(
             """
 package:
@@ -448,7 +448,7 @@ extra:
 
 @pytest.fixture(scope="function")
 def python_skipped_recipe(config_yaml, request):
-    with open(os.path.join(config_yaml, "recipe", "meta.yaml"), "w") as fh:
+    with open(Path(config_yaml) / "recipe" / "meta.yaml", "w") as fh:
         fh.write(
             """
 package:
@@ -478,7 +478,7 @@ about:
 
 @pytest.fixture(scope="function")
 def linux_skipped_recipe(config_yaml, request):
-    with open(os.path.join(config_yaml, "recipe", "meta.yaml"), "w") as fh:
+    with open(Path(config_yaml) / "recipe" / "meta.yaml", "w") as fh:
         fh.write(
             """
 package:
@@ -506,7 +506,7 @@ about:
 
 @pytest.fixture(scope="function")
 def render_skipped_recipe(config_yaml, request):
-    with open(os.path.join(config_yaml, "recipe", "meta.yaml"), "w") as fh:
+    with open(Path(config_yaml) / "recipe" / "meta.yaml", "w") as fh:
         fh.write(
             """
 package:
@@ -521,7 +521,7 @@ requirements:
         - python
     """
         )
-    with open(os.path.join(config_yaml, "conda-forge.yml"), "a+") as fh:
+    with open(Path(config_yaml) / "conda-forge.yml", "a+") as fh:
         fh.write(
             """
 skip_render:
@@ -545,7 +545,7 @@ skip_render:
 
 @pytest.fixture(scope="function")
 def choco_recipe(config_yaml, request):
-    with open(os.path.join(config_yaml, "recipe", "meta.yaml"), "w") as fh:
+    with open(Path(config_yaml) / "recipe" / "meta.yaml", "w") as fh:
         fh.write(
             """
 package:
@@ -564,7 +564,7 @@ about:
     home: home
     """
         )
-    with open(os.path.join(config_yaml, "conda-forge.yml"), "a+") as fh:
+    with open(Path(config_yaml) / "conda-forge.yml", "a+") as fh:
         fh.write(
             """
 choco:
@@ -585,7 +585,7 @@ choco:
 
 @pytest.fixture(scope="function")
 def cuda_enabled_recipe(config_yaml, request):
-    with open(os.path.join(config_yaml, "recipe", "meta.yaml"), "w") as fh:
+    with open(Path(config_yaml) / "recipe" / "meta.yaml", "w") as fh:
         fh.write(
             """
 package:
