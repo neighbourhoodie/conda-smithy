@@ -11,7 +11,7 @@ import shutil
 
 from conda_smithy import cli
 
-_thisdir = os.path.abspath(os.path.dirname(__file__))
+_thisdir = Path(__file__).resolve().parent
 
 InitArgs = collections.namedtuple(
     "ArgsObject",
@@ -42,13 +42,13 @@ def test_init(py_recipe):
     recipe = py_recipe.recipe
     # expected args object has
     args = InitArgs(
-        recipe_directory=os.path.join(recipe, "recipe"),
-        feedstock_directory=os.path.join(recipe, "{package.name}-feedstock"),
-        temporary_directory=os.path.join(recipe, "temp"),
+        recipe_directory=str(Path(recipe) / "recipe"),
+        feedstock_directory=str(Path(recipe) / "{package.name}-feedstock"),
+        temporary_directory=str(Path(recipe) / "temp"),
     )
     init_obj(args)
-    destination = os.path.join(recipe, "py-test-feedstock")
-    assert Path(destination).is_dir()
+    destination = Path(recipe) / "py-test-feedstock"
+    assert destination.is_dir()
 
 
 def test_init_with_custom_config(py_recipe):
@@ -93,38 +93,34 @@ def test_init_multiple_output_matrix(testing_workdir):
     subparser = parser.add_subparsers()
     init_obj = cli.Init(subparser)
     regen_obj = cli.Regenerate(subparser)
-    recipe = os.path.join(_thisdir, "recipes", "multiple_outputs")
-    feedstock_dir = os.path.join(
-        testing_workdir, "multiple-outputs-test-feedstock"
-    )
+    recipe = Path(_thisdir) / "recipes" / "multiple_outputs"
+    feedstock_dir = Path(testing_workdir) / "multiple-outputs-test-feedstock"
     args = InitArgs(
-        recipe_directory=recipe,
-        feedstock_directory=feedstock_dir,
-        temporary_directory=os.path.join(recipe, "temp"),
+        recipe_directory=str(recipe),
+        feedstock_directory=str(feedstock_dir),
+        temporary_directory=str(recipe.joinpath("temp")),
     )
     init_obj(args)
     # Ignore conda-forge-pinning for this test, as the test relies on conda-forge-pinning
     # not being present
     args = RegenerateArgs(
-        feedstock_directory=feedstock_dir,
+        feedstock_directory=str(feedstock_dir),
         feedstock_config=None,
         commit=False,
         no_check_uptodate=True,
         exclusive_config_file="recipe/conda_build_config.yaml",
         check=False,
-        temporary_directory=os.path.join(recipe, "temp"),
+        temporary_directory=str(recipe.joinpath("temp")),
     )
     regen_obj(args)
-    matrix_dir = Path(feedstock_dir) / ".ci_support"
+    matrix_dir = feedstock_dir.joinpath(".ci_support")
     # the matrix should be consolidated among all outputs, as well as the top-level
     # reqs. Only the top-level reqs should have indedependent config files,
     # though - loops within outputs are contained in those top-level configs.
     matrix_dir_len = len(list(matrix_dir.iterdir()))
     assert matrix_dir_len == 13
-    linux_libpng16 = os.path.join(
-        matrix_dir, "linux_64_libpng1.6libpq9.5.yaml"
-    )
-    assert Path(linux_libpng16).is_file()
+    linux_libpng16 = Path(matrix_dir) / "linux_64_libpng1.6libpq9.5.yaml"
+    assert linux_libpng16.is_file()
     with open(linux_libpng16) as f:
         config = yaml.safe_load(f)
     assert config["libpng"] == ["1.6"]
@@ -149,30 +145,28 @@ def test_render_readme_with_multiple_outputs(testing_workdir, dirname):
     subparser = parser.add_subparsers()
     init_obj = cli.Init(subparser)
     regen_obj = cli.Regenerate(subparser)
-    _thisdir = os.path.abspath(os.path.dirname(__file__))
-    recipe = os.path.join(_thisdir, "recipes", dirname)
-    feedstock_dir = os.path.join(
-        testing_workdir, "multiple-outputs-test-feedstock"
-    )
+    _thisdir = Path(__file__).resolve().parent
+    recipe = Path(_thisdir).joinpath("recipes", dirname)
+    feedstock_dir = Path(testing_workdir) / "multiple-outputs-test-feedstock"
     args = InitArgs(
-        recipe_directory=recipe,
-        feedstock_directory=feedstock_dir,
-        temporary_directory=os.path.join(recipe, "temp"),
+        recipe_directory=str(recipe),
+        feedstock_directory=str(feedstock_dir),
+        temporary_directory=str(recipe.joinpath("temp")),
     )
     init_obj(args)
     # Ignore conda-forge-pinning for this test, as the test relies on conda-forge-pinning
     # not being present
     args = RegenerateArgs(
-        feedstock_directory=feedstock_dir,
+        feedstock_directory=str(feedstock_dir),
         feedstock_config=None,
         commit=False,
         no_check_uptodate=True,
         exclusive_config_file="recipe/conda_build_config.yaml",
         check=False,
-        temporary_directory=os.path.join(recipe, "temp"),
+        temporary_directory=str(recipe.joinpath("temp")),
     )
     regen_obj(args)
-    readme_path = Path(feedstock_dir) / "README.md"
+    readme_path = feedstock_dir.joinpath("README.md")
     assert readme_path.exists()
     with open(readme_path, "r") as readme_file:
         readme = readme_file.read()
@@ -206,29 +200,27 @@ def test_init_cuda_docker_images(testing_workdir):
     subparser = parser.add_subparsers()
     init_obj = cli.Init(subparser)
     regen_obj = cli.Regenerate(subparser)
-    recipe = os.path.join(_thisdir, "recipes", "cuda_docker_images")
-    feedstock_dir = os.path.join(
-        testing_workdir, "cuda_docker_images-feedstock"
-    )
+    recipe = Path(_thisdir) / "recipes" / "cuda_docker_images"
+    feedstock_dir = Path(testing_workdir) / "cuda_docker_images-feedstock"
     args = InitArgs(
-        recipe_directory=recipe,
-        feedstock_directory=feedstock_dir,
-        temporary_directory=os.path.join(recipe, "temp"),
+        recipe_directory=str(recipe),
+        feedstock_directory=str(feedstock_dir),
+        temporary_directory=str(recipe.joinpath("temp")),
     )
     init_obj(args)
     # Ignore conda-forge-pinning for this test, as the test relies on
     # conda-forge-pinning not being present
     args = RegenerateArgs(
-        feedstock_directory=feedstock_dir,
+        feedstock_directory=str(feedstock_dir),
         feedstock_config=None,
         commit=False,
         no_check_uptodate=True,
         exclusive_config_file="recipe/conda_build_config.yaml",
         check=False,
-        temporary_directory=os.path.join(recipe, "temp"),
+        temporary_directory=str(recipe.joinpath("temp")),
     )
     regen_obj(args)
-    matrix_dir = Path(feedstock_dir) / ".ci_support"
+    matrix_dir = feedstock_dir.joinpath(".ci_support")
     # the matrix should be consolidated among all outputs, as well as the
     # top-level reqs. Only the top-level reqs should have indedependent config
     # files, though - loops within outputs are contained in those top-level
@@ -258,29 +250,27 @@ def test_init_multiple_docker_images(testing_workdir):
     subparser = parser.add_subparsers()
     init_obj = cli.Init(subparser)
     regen_obj = cli.Regenerate(subparser)
-    recipe = os.path.join(_thisdir, "recipes", "multiple_docker_images")
-    feedstock_dir = os.path.join(
-        testing_workdir, "multiple_docker_images-feedstock"
-    )
+    recipe = Path(_thisdir) / "recipes" / "multiple_docker_images"
+    feedstock_dir = Path(testing_workdir) / "multiple_docker_images-feedstock"
     args = InitArgs(
-        recipe_directory=recipe,
-        feedstock_directory=feedstock_dir,
-        temporary_directory=os.path.join(recipe, "temp"),
+        recipe_directory=str(recipe),
+        feedstock_directory=str(feedstock_dir),
+        temporary_directory=str(recipe.joinpath("temp")),
     )
     init_obj(args)
     # Ignore conda-forge-pinning for this test, as the test relies on
     # conda-forge-pinning not being present
     args = RegenerateArgs(
-        feedstock_directory=feedstock_dir,
+        feedstock_directory=str(feedstock_dir),
         feedstock_config=None,
         commit=False,
         no_check_uptodate=True,
         exclusive_config_file="recipe/conda_build_config.yaml",
         check=False,
-        temporary_directory=os.path.join(recipe, "temp"),
+        temporary_directory=str(recipe.joinpath("temp")),
     )
     regen_obj(args)
-    matrix_dir = Path(feedstock_dir) / ".ci_support"
+    matrix_dir = feedstock_dir.joinpath(".ci_support")
     # the matrix should be consolidated among all outputs, as well as the
     # top-level reqs. Only the top-level reqs should have indedependent config
     # files, though - loops within outputs are contained in those top-level
@@ -300,28 +290,28 @@ def test_regenerate(py_recipe, testing_workdir):
     subparser = parser.add_subparsers()
     regen_obj = cli.Regenerate(subparser)
     recipe = py_recipe.recipe
-    feedstock_dir = os.path.join(_thisdir, "recipes", "click-test-feedstock")
-    dest_dir = os.path.join(testing_workdir, "click-test-feedstock")
+    feedstock_dir = Path(_thisdir) / "recipes" / "click-test-feedstock"
+    dest_dir = Path(testing_workdir) / "click-test-feedstock"
     shutil.copytree(feedstock_dir, dest_dir)
     subprocess.call("git init".split(), cwd=dest_dir)
     subprocess.call("git add *".split(), cwd=dest_dir)
     subprocess.call('git commit -m "init"'.split(), cwd=dest_dir)
-    matrix_folder = os.path.join(dest_dir, ".ci_support")
+    matrix_folder = dest_dir.joinpath(".ci_support")
 
     # original rendering was with py27, 36, no target_platform
     assert len(list(Path(matrix_folder).iterdir())) == 7
 
     # reduce the python matrix and make sure the matrix files reflect the change
     args = RegenerateArgs(
-        feedstock_directory=dest_dir,
+        feedstock_directory=str(dest_dir),
         feedstock_config=None,
         commit=False,
         no_check_uptodate=True,
-        exclusive_config_file=os.path.join(
-            recipe, "recipe", "short_config.yaml"
+        exclusive_config_file=str(
+            Path(recipe) / "recipe" / "short_config.yaml"
         ),
         check=False,
-        temporary_directory=os.path.join(dest_dir, "temp"),
+        temporary_directory=str(dest_dir.joinpath("temp")),
     )
     regen_obj(args)
 
@@ -334,38 +324,36 @@ def test_render_variant_mismatches(testing_workdir):
     subparser = parser.add_subparsers()
     init_obj = cli.Init(subparser)
     regen_obj = cli.Regenerate(subparser)
-    _thisdir = os.path.abspath(os.path.dirname(__file__))
-    recipe = os.path.join(_thisdir, "recipes", "variant_mismatches")
-    feedstock_dir = os.path.join(
-        testing_workdir, "test-variant-mismatches-feedstock"
-    )
+    _thisdir = Path(__file__).resolve().parent
+    recipe = Path(_thisdir) / "recipes" / "variant_mismatches"
+    feedstock_dir = Path(testing_workdir) / "test-variant-mismatches-feedstock"
     args = InitArgs(
-        recipe_directory=recipe,
-        feedstock_directory=feedstock_dir,
-        temporary_directory=str(Path(recipe) / "temp"),
+        recipe_directory=str(recipe),
+        feedstock_directory=str(feedstock_dir),
+        temporary_directory=str(recipe.joinpath("temp")),
     )
     init_obj(args)
     # Ignore conda-forge-pinning for this test, as the test relies on conda-forge-pinning
     # not being present
     args = RegenerateArgs(
-        feedstock_directory=feedstock_dir,
+        feedstock_directory=str(feedstock_dir),
         feedstock_config=None,
         commit=False,
         no_check_uptodate=True,
         exclusive_config_file="recipe/conda_build_config.yaml",
         check=False,
-        temporary_directory=str(Path(recipe) / "temp"),
+        temporary_directory=str(recipe.joinpath("temp")),
     )
     regen_obj(args)
 
-    matrix_dir = os.path.join(feedstock_dir, ".ci_support")
+    matrix_dir = feedstock_dir.joinpath(".ci_support")
     cfgs = os.listdir(matrix_dir)
     assert len(cfgs) == 3  # readme + 2 configs
 
     for _cfg in cfgs:
         if _cfg == "README":
             continue
-        cfg = os.path.join(matrix_dir, _cfg)
+        cfg = matrix_dir.joinpath(_cfg)
         with open(cfg, "r") as f:
             data = yaml.safe_load(f)
         assert data["a"] == data["b"]
