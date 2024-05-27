@@ -17,7 +17,7 @@ import conda_smithy.feedstock_io as fio
 
 
 def keep_dir(dirname):
-    keep_filename = os.path.join(dirname, ".keep")
+    keep_filename = Path(dirname) / ".keep"
     with io.open(keep_filename, "w", encoding="utf-8", newline="\n") as fh:
         fh.write("")
 
@@ -56,7 +56,7 @@ class TestFeedstockIO(unittest.TestCase):
         os.chdir(self.tmp_dir)
 
         with io.open(
-            os.path.abspath(".keep"), "w", encoding="utf-8", newline="\n"
+            Path(".keep").resolve(), "w", encoding="utf-8", newline="\n"
         ) as fh:
             fh.write("")
 
