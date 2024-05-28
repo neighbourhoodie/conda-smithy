@@ -626,17 +626,16 @@ def test_migrator_cfp_override(recipe_migration_cfep9, jinja_env):
 
 def test_migrator_delete_old(recipe_migration_cfep9, jinja_env):
     cfp_file = recipe_migration_cfep9.config["exclusive_config_file"]
-    cfp_migration_dir = os.path.join(
-        os.path.dirname(cfp_file), "share", "conda-forge", "migrations"
-    )
-    assert Path(recipe_migration_cfep9.recipe, ".ci_support", "migrations", "zlib.yaml").exists()
-    Path(cfp_migration_dir).mkdir(parents=True, exist_ok=True)
+    cfp_migration_dir = Path(cfp_file).parent.joinpath("share", "conda-forge", "migrations")
+    recipe_path = Path(recipe_migration_cfep9.recipe, ".ci_support", "migrations", "zlib.yaml")
+    assert recipe_path.exists()
+    cfp_migration_dir.mkdir(parents=True, exist_ok=True)
     configure_feedstock.render_azure(
         jinja_env=jinja_env,
         forge_config=recipe_migration_cfep9.config,
         forge_dir=recipe_migration_cfep9.recipe,
     )
-    assert not Path(recipe_migration_cfep9.recipe, ".ci_support", "migrations", "zlib.yaml").exists()
+    assert not recipe_path.exists()
 
 
 def test_migrator_downgrade_recipe(
@@ -723,8 +722,8 @@ def test_files_skip_render(render_skipped_recipe, jinja_env):
         ".github/workflows/webservices.yml",
     ]
     for f in skipped_files:
-        fpath = os.path.join(render_skipped_recipe.recipe, f)
-        assert not Path(fpath).exists()
+        fpath = Path(render_skipped_recipe.recipe, f)
+        assert not fpath.exists()
 
 
 def test_choco_install(choco_recipe, jinja_env):
@@ -733,12 +732,10 @@ def test_choco_install(choco_recipe, jinja_env):
         forge_config=choco_recipe.config,
         forge_dir=choco_recipe.recipe,
     )
-    azure_file = os.path.join(
-        os.path.join(
-            choco_recipe.recipe, ".azure-pipelines", "azure-pipelines-win.yml"
-        )
+    azure_file = Path(
+        choco_recipe.recipe, ".azure-pipelines", "azure-pipelines-win.yml"
     )
-    assert Path(azure_file).is_file()
+    assert azure_file.is_file()
     with open(azure_file) as f:
         contents = f.read()
     exp = """
