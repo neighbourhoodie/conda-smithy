@@ -541,7 +541,7 @@ def test_secrets(py_recipe, jinja_env):
     assert b"-e BINSTAR_TOKEN" in content
 
     for config_yaml in recipe_path.joinpath(".azure-pipelines").iterdir():
-        if config_yaml.suffix(".yaml"):
+        if config_yaml.suffix == ".yaml":
             with open(config_yaml) as fo:
                 config = yaml.safe_load(fo)
                 if "jobs" in config:
