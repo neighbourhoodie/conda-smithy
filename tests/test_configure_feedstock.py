@@ -51,7 +51,7 @@ def test_noarch_runs_on_circle(noarch_recipe, jinja_env):
     matrix_dir = Path(noarch_recipe.recipe) / ".ci_support"
     assert matrix_dir.is_dir()
     # single matrix entry - readme is generated later in main function
-    assert len(os.listdir(matrix_dir)) == 1
+    assert len(list(matrix_dir.iterdir())) == 1
 
 
 @pytest.mark.parametrize("recipe_dirname", ["recipe", "custom_recipe_dir"])
@@ -66,7 +66,7 @@ def test_noarch_runs_on_azure(noarch_recipe, jinja_env):
     matrix_dir = Path(noarch_recipe.recipe) / ".ci_support"
     assert matrix_dir.is_dir()
     # single matrix entry - readme is generated later in main function
-    assert len(os.listdir(matrix_dir)) == 1
+    assert len(list(matrix_dir.iterdir())) == 1
 
 
 def test_r_skips_appveyor(r_recipe, jinja_env):
@@ -95,7 +95,7 @@ def test_r_matrix_travis(r_recipe, jinja_env):
     matrix_dir = Path(r_recipe.recipe) / ".ci_support"
     assert matrix_dir.is_dir()
     # single matrix entry - readme is generated later in main function
-    assert len(os.listdir(matrix_dir)) == 2
+    assert len(list(matrix_dir.iterdir())) == 2
 
 
 @pytest.mark.legacy_circle
@@ -112,7 +112,7 @@ def test_r_matrix_on_circle(r_recipe, jinja_env):
     matrix_dir = Path(r_recipe.recipe) / ".ci_support"
     assert matrix_dir.is_dir()
     # single matrix entry - readme is generated later in main function
-    assert len(os.listdir(matrix_dir)) == 2
+    assert len(list(matrix_dir.iterdir())) == 2
 
 
 def test_r_matrix_azure(r_recipe, jinja_env):
@@ -126,7 +126,7 @@ def test_r_matrix_azure(r_recipe, jinja_env):
     matrix_dir = Path(r_recipe.recipe) / ".ci_support"
     assert matrix_dir.is_dir()
     # single matrix entry - readme is generated later in main function
-    assert len(os.listdir(matrix_dir)) == 4
+    assert len(list(matrix_dir.iterdir())) == 4
 
 
 def test_py_matrix_appveyor(py_recipe, jinja_env):
@@ -142,7 +142,7 @@ def test_py_matrix_appveyor(py_recipe, jinja_env):
     assert matrix_dir.is_dir()
     # 2 python versions. Recipe uses c_compiler, but this is a zipped key
     #     and shouldn't add extra configurations
-    assert len(os.listdir(matrix_dir)) == 2
+    assert len(list(matrix_dir.iterdir())) == 2
 
 
 @pytest.mark.legacy_travis
@@ -159,7 +159,7 @@ def test_py_matrix_travis(py_recipe, jinja_env):
     matrix_dir = Path(py_recipe.recipe) / ".ci_support"
     assert matrix_dir.is_dir()
     # two matrix enties - one per py ver
-    assert len(os.listdir(matrix_dir)) == 2
+    assert len(list(matrix_dir.iterdir())) == 2
 
 
 @pytest.mark.legacy_circle
@@ -176,7 +176,7 @@ def test_py_matrix_on_circle(py_recipe, jinja_env):
     matrix_dir = Path(py_recipe.recipe) / ".ci_support"
     assert matrix_dir.is_dir()
     # single matrix entry - readme is generated later in main function
-    assert len(os.listdir(matrix_dir)) == 2
+    assert len(list(matrix_dir.iterdir())) == 2
 
 
 def test_py_matrix_on_github(py_recipe, jinja_env):
@@ -192,7 +192,7 @@ def test_py_matrix_on_github(py_recipe, jinja_env):
     matrix_dir = Path(py_recipe.recipe) / ".ci_support"
     assert matrix_dir.is_dir()
     # single matrix entry - readme is generated later in main function
-    assert len(os.listdir(matrix_dir)) == 2
+    assert len(list(matrix_dir.iterdir())) == 2
     assert Path(py_recipe.recipe, ".github", "workflows", "conda-build.yml").exists()
 
 
@@ -207,7 +207,7 @@ def test_py_matrix_on_azure(py_recipe, jinja_env):
     matrix_dir = Path(py_recipe.recipe) / ".ci_support"
     assert matrix_dir.is_dir()
     # single matrix entry - readme is generated later in main function
-    assert len(os.listdir(matrix_dir)) == 6
+    assert len(list(matrix_dir.iterdir())) == 6
 
 
 def test_stdlib_on_azure(stdlib_recipe, jinja_env):
@@ -511,7 +511,7 @@ def test_render_windows_with_skipped_python(python_skipped_recipe, jinja_env):
 
     matrix_dir = Path(python_skipped_recipe.recipe) / ".ci_support"
     # matrix has 2.7, 3.5, 3.6, but 3.6 is skipped.  Should be 2 entries.
-    assert len(os.listdir(matrix_dir)) == 2
+    assert len(list(matrix_dir.iterdir())) == 2
 
 
 def test_readme_has_terminating_newline(noarch_recipe, jinja_env):
@@ -862,7 +862,7 @@ def test_cos7_env_render(py_recipe, jinja_env):
         matrix_dir = Path(py_recipe.recipe) / ".ci_support"
         assert matrix_dir.is_dir()
         # single matrix entry - readme is generated later in main function
-        assert len(os.listdir(matrix_dir)) == 6
+        assert len(list(matrix_dir.iterdir())) == 6
 
     finally:
         if has_env:
@@ -893,7 +893,7 @@ def test_cuda_enabled_render(cuda_enabled_recipe, jinja_env):
         matrix_dir = Path(cuda_enabled_recipe.recipe) / ".ci_support"
         assert matrix_dir.is_dir()
         # single matrix entry - readme is generated later in main function
-        assert len(os.listdir(matrix_dir)) == 6
+        assert len(list(matrix_dir.iterdir())) == 6
 
     finally:
         if has_env:
