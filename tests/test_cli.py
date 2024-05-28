@@ -1,6 +1,5 @@
 import argparse
 import collections
-import os
 from pathlib import Path
 import subprocess
 from textwrap import dedent
