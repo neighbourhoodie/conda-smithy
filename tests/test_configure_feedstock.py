@@ -498,9 +498,9 @@ def test_render_with_all_skipped_generates_readme(skipped_recipe, jinja_env):
 def test_render_windows_with_skipped_python(python_skipped_recipe, jinja_env):
     config = python_skipped_recipe.config
     config["provider"]["win"] = "appveyor"
-    config["exclusive_config_file"] = os.path.join(
+    config["exclusive_config_file"] = str(Path(
         python_skipped_recipe.recipe, "recipe", "long_config.yaml"
-    )
+    ))
     configure_feedstock.render_appveyor(
         jinja_env=jinja_env,
         forge_config=config,
@@ -534,13 +534,14 @@ def test_secrets(py_recipe, jinja_env):
         forge_dir=py_recipe.recipe,
     )
 
-    run_docker_build = Path(py_recipe.recipe) / ".scripts" / "run_docker_build.sh"
+    recipe_path = Path(py_recipe.recipe)
+    run_docker_build = recipe_path.joinpath(".scripts", "run_docker_build.sh")
     with open(run_docker_build, "rb") as run_docker_build_file:
         content = run_docker_build_file.read()
     assert b"-e BINSTAR_TOKEN" in content
 
     for config_yaml in os.listdir(
-        os.path.join(py_recipe.recipe, ".azure-pipelines")
+        recipe_path.joinpath(".azure-pipelines")
     ):
         if config_yaml.endswith(".yaml"):
             with open(config_yaml) as fo:
@@ -562,7 +563,7 @@ def test_secrets(py_recipe, jinja_env):
         forge_dir=py_recipe.recipe,
     )
 
-    with open(Path(py_recipe.recipe, ".drone.yml")) as fo:
+    with open(recipe_path.joinpath(".drone.yml")) as fo:
         config = list(yaml.safe_load_all(fo))[-1]
         assert any(
             step.get("environment", {})
@@ -593,11 +594,11 @@ def test_migrator_recipe(recipe_migration_cfep9, jinja_env):
 
 def test_migrator_cfp_override(recipe_migration_cfep9, jinja_env):
     cfp_file = recipe_migration_cfep9.config["exclusive_config_file"]
-    cfp_migration_dir = os.path.join(
-        os.path.dirname(cfp_file), "share", "conda-forge", "migrations"
+    cfp_migration_dir = Path(cfp_file).parent.joinpath(
+        "share", "conda-forge", "migrations"
     )
-    Path(cfp_migration_dir).mkdir(parents=True, exist_ok=True)
-    with open(os.path.join(cfp_migration_dir, "zlib2.yaml"), "w") as f:
+    cfp_migration_dir.mkdir(parents=True, exist_ok=True)
+    with open(cfp_migration_dir.joinpath("zlib2.yaml"), "w") as f:
         f.write(
             textwrap.dedent(
                 """
@@ -687,7 +688,7 @@ def test_migrator_compiler_version_recipe(
     assert (
         len(
             os.listdir(
-                os.path.join(
+                Path(
                     recipe_migration_win_compiled.recipe,
                     ".ci_support",
                     "migrations",
@@ -698,7 +699,7 @@ def test_migrator_compiler_version_recipe(
     )
 
     rendered_variants = os.listdir(
-        os.path.join(recipe_migration_win_compiled.recipe, ".ci_support")
+        Path(recipe_migration_win_compiled.recipe, ".ci_support")
     )
 
     assert "win_64_c_compilervs2008python2.7.yaml" in rendered_variants
@@ -903,10 +904,11 @@ def test_cuda_enabled_render(cuda_enabled_recipe, jinja_env):
 
 
 def test_conda_build_tools(config_yaml, caplog):
+    config_yaml_path = Path(config_yaml)
     load_forge_config = lambda: configure_feedstock._load_forge_config(  # noqa
         config_yaml,
-        exclusive_config_file=os.path.join(
-            config_yaml, "recipe", "default_config.yaml"
+        exclusive_config_file=str(
+            config_yaml_path.joinpath("recipe", "default_config.yaml")
         ),
     )
 
@@ -917,21 +919,21 @@ def test_conda_build_tools(config_yaml, caplog):
     assert cfg["conda_build_tool"] == "conda-build"  # current default
 
     # legacy compatibility config
-    with open(Path(config_yaml) / "conda-forge.yml") as fp:
+    with open(config_yaml_path.joinpath("conda-forge.yml")) as fp:
         unmodified = fp.read()
-    with open(Path(config_yaml) / "conda-forge.yml", "a+") as fp:
+    with open(config_yaml_path.joinpath("conda-forge.yml"), "a+") as fp:
         fp.write("build_with_mambabuild: true")
     with pytest.deprecated_call(match="build_with_mambabuild is deprecated"):
         assert load_forge_config()["conda_build_tool"] == "mambabuild"
 
-    with open(Path(config_yaml) / "conda-forge.yml", "w") as fp:
+    with open(config_yaml_path.joinpath("conda-forge.yml"), "w") as fp:
         fp.write(unmodified)
         fp.write("build_with_mambabuild: false")
 
     with pytest.deprecated_call(match="build_with_mambabuild is deprecated"):
         assert load_forge_config()["conda_build_tool"] == "conda-build"
 
-    with open(Path(config_yaml) / "conda-forge.yml", "w") as fp:
+    with open(config_yaml_path.joinpath("conda-forge.yml"), "w") as fp:
         fp.write(unmodified)
         fp.write("conda_build_tool: does-not-exist")
 
