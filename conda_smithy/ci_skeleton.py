@@ -6,7 +6,6 @@ Note that your CI jobs will still execute under your organization, and not be
 added to conda-forge's queue.
 """
 
-import os
 from pathlib import Path
 import sys
 
@@ -20,7 +19,7 @@ def _render_template(template_file, env, forge_dir, config):
     target_fname = Path(forge_dir).joinpath(template_file)
     print("Generating ", target_fname, file=sys.stderr)
     new_file_contents = template.render(**config)
-    Path(target_fname).parent.mkdir(parents=True, exist_ok=True)
+    target_fname.parent.mkdir(parents=True, exist_ok=True)
     with open(target_fname, "w") as fh:
         fh.write(new_file_contents)
 
@@ -37,18 +36,16 @@ def _insert_into_gitignore(
 ):
     """Places gitignore contents into gitignore."""
     # get current contents
-    fname = str(Path(feedstock_directory) / ".gitignore")
-    print("Updating " + fname)
-    if Path(fname).is_file():
+    fname = Path(feedstock_directory) / ".gitignore"
+    print("Updating ", fname.name)
+    if fname.is_file():
         with open(fname, "r") as f:
             s = f.read()
         before, _, s = s.partition(prefix)
         _, _, after = s.partition(suffix)
     else:
         before = after = ""
-        dname = os.path.dirname(fname)
-        if dname:
-            Path(dname).mkdir(parents=True, exist_ok=True)
+        fname.parent.mkdir(parents=True, exist_ok=True)
     new = prefix + GITIGNORE_ADDITIONAL + suffix
     # write out the file
     with open(fname, "w") as f:
