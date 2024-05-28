@@ -7,7 +7,6 @@ designed to run on OSX, Linux and Windows.
 
 """
 import argparse
-import os
 from pathlib import Path
 import platform
 import subprocess
