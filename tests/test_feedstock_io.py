@@ -151,11 +151,10 @@ class TestFeedstockIO(unittest.TestCase):
     def test_remove_file(self):
         for tmp_dir, repo, pathfunc in parameterize():
             for filename in ["test.txt", "dir1/dir2/test.txt"]:
-                dirname = os.path.dirname(filename)
-                if dirname and not Path(dirname).exists():
-                    Path(dirname).mkdir(parents=True)
+                dirname = Path(filename).parent
+                Path(dirname).mkdir(parents=True, exist_ok=True)
 
-                filename = os.path.join(tmp_dir, filename)
+                filename = str(Path(tmp_dir) / filename)
 
                 with io.open(
                     filename, "w", encoding="utf-8", newline="\n"
@@ -165,9 +164,9 @@ class TestFeedstockIO(unittest.TestCase):
                     repo.index.add([filename])
 
                 self.assertTrue(Path(filename).exists())
-                if dirname:
-                    self.assertTrue(Path(dirname).exists())
-                    self.assertTrue(Path(os.path.dirname(dirname)).exists())
+                if dirname != Path("."):
+                    self.assertTrue(dirname.exists())
+                    self.assertTrue(dirname.parent.exists())
                 if repo is not None:
                     self.assertTrue(
                         list(repo.index.iter_blobs(BlobFilter(filename)))
@@ -176,9 +175,9 @@ class TestFeedstockIO(unittest.TestCase):
                 fio.remove_file(pathfunc(filename))
 
                 self.assertFalse(Path(filename).exists())
-                if dirname:
-                    self.assertFalse(Path(dirname).exists())
-                    self.assertFalse(Path(os.path.dirname(dirname)).exists())
+                if dirname != Path("."):
+                    self.assertFalse(dirname.exists())
+                    self.assertFalse(dirname.parent.exists())
                 if repo is not None:
                     self.assertFalse(
                         list(repo.index.iter_blobs(BlobFilter(filename)))
