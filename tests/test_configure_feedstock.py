@@ -284,7 +284,7 @@ def test_upload_on_branch_azure(upload_on_branch_recipe, jinja_env):
     assert upload_on_branch_recipe.config["upload_on_branch"] == "foo-branch"
     # Check that the parameter is in the generated file.
     with open(
-        os.path.join(
+        Path(
             upload_on_branch_recipe.recipe,
             ".azure-pipelines",
             "azure-pipelines-osx.yml",
@@ -301,7 +301,7 @@ def test_upload_on_branch_azure(upload_on_branch_recipe, jinja_env):
     )
 
     with open(
-        os.path.join(
+        Path(
             upload_on_branch_recipe.recipe,
             ".azure-pipelines",
             "azure-pipelines-win.yml",
@@ -315,7 +315,7 @@ def test_upload_on_branch_azure(upload_on_branch_recipe, jinja_env):
     )
     assert win_build_step["env"]["UPLOAD_ON_BRANCH"] == "foo-branch"
     with open(
-        os.path.join(
+        Path(
             upload_on_branch_recipe.recipe,
             ".scripts",
             "run_win_build.bat",
@@ -325,7 +325,7 @@ def test_upload_on_branch_azure(upload_on_branch_recipe, jinja_env):
     assert "BUILD_SOURCEBRANCHNAME" in build_script_win
 
     with open(
-        os.path.join(
+        Path(
             upload_on_branch_recipe.recipe,
             ".azure-pipelines",
             "azure-pipelines-linux.yml",
@@ -941,17 +941,18 @@ def test_conda_build_tools(config_yaml, caplog):
 
 
 def test_remote_ci_setup(config_yaml):
+    config_yaml_path = Path(config_yaml)
     load_forge_config = lambda: configure_feedstock._load_forge_config(  # noqa
         config_yaml,
-        exclusive_config_file=os.path.join(
-            config_yaml, "recipe", "default_config.yaml"
+        exclusive_config_file=str(
+            config_yaml_path.joinpath("recipe", "default_config.yaml")
         ),
     )
     cfg = load_forge_config()
-    with open(Path(config_yaml) / "conda-forge.yml") as fp:
+    with open(config_yaml_path.joinpath("conda-forge.yml")) as fp:
         unmodified = fp.read()
 
-    with open(Path(config_yaml) / "conda-forge.yml", "a+") as fp:
+    with open(config_yaml_path.joinpath("conda-forge.yml"), "a+") as fp:
         fp.write(
             "remote_ci_setup: ['conda-forge-ci-setup=3', 'py-lief<0.12']\n"
         )
@@ -968,7 +969,7 @@ def test_remote_ci_setup(config_yaml):
         "py-lief",
     ]
 
-    with open(Path(config_yaml) / "conda-forge.yml", "w") as fp:
+    with open(config_yaml_path.joinpath("conda-forge.yml"), "w") as fp:
         fp.write(unmodified + "\n")
         fp.write(
             "remote_ci_setup: ['conda-forge-ci-setup=3', 'py-lief<0.12']\n"
@@ -1923,7 +1924,7 @@ def test_conda_build_api_render_for_smithy(testing_workdir):
 
     _thisdir = Path(__file__).resolve().parent
     recipe = _thisdir.joinpath("recipes", "multiple_outputs")
-    dest_recipe = os.path.join(testing_workdir, "recipe")
+    dest_recipe = str(Path(testing_workdir, "recipe"))
     shutil.copytree(recipe, dest_recipe)
     all_top_level_builds = {
         ("1.5", "9.5"),
