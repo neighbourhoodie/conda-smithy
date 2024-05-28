@@ -540,10 +540,8 @@ def test_secrets(py_recipe, jinja_env):
         content = run_docker_build_file.read()
     assert b"-e BINSTAR_TOKEN" in content
 
-    for config_yaml in os.listdir(
-        recipe_path.joinpath(".azure-pipelines")
-    ):
-        if config_yaml.endswith(".yaml"):
+    for config_yaml in recipe_path.joinpath(".azure-pipelines").iterdir():
+        if config_yaml.suffix(".yaml"):
             with open(config_yaml) as fo:
                 config = yaml.safe_load(fo)
                 if "jobs" in config:
@@ -650,18 +648,12 @@ def test_migrator_downgrade_recipe(
         forge_config=recipe_migration_cfep9_downgrade.config,
         forge_dir=recipe_migration_cfep9_downgrade.recipe,
     )
-    assert (
-        len(
-            os.listdir(
-                Path(
-                    recipe_migration_cfep9_downgrade.recipe,
-                    ".ci_support",
-                    "migrations",
-                )
-            )
-        )
-        == 2
+    migrations_dir = Path(
+        recipe_migration_cfep9_downgrade.recipe,
+        ".ci_support",
+        "migrations",
     )
+    assert (len(list(migrations_dir.iterdir())) == 2)
 
     with open(
         Path(
@@ -685,22 +677,12 @@ def test_migrator_compiler_version_recipe(
         forge_config=recipe_migration_win_compiled.config,
         forge_dir=recipe_migration_win_compiled.recipe,
     )
-    assert (
-        len(
-            os.listdir(
-                Path(
-                    recipe_migration_win_compiled.recipe,
-                    ".ci_support",
-                    "migrations",
-                )
-            )
-        )
-        == 1
-    )
 
-    rendered_variants = os.listdir(
-        Path(recipe_migration_win_compiled.recipe, ".ci_support")
-    )
+    migrations_dir = Path(recipe_migration_win_compiled.recipe, ".ci_support", "migrations")
+    assert (len(list(migrations_dir.iterdir())) == 1)
+
+    dir = Path(recipe_migration_win_compiled.recipe) / ".ci_support"
+    rendered_variants = [item.name for item in dir.iterdir()]
 
     assert "win_64_c_compilervs2008python2.7.yaml" in rendered_variants
     assert "win_64_c_compilervs2017python3.5.yaml" in rendered_variants
