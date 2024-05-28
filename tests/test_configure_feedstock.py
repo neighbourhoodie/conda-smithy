@@ -779,20 +779,21 @@ def test_automerge_action_exists(py_recipe, jinja_env):
 
 
 def test_conda_forge_yaml_empty(config_yaml):
+    config_yaml_path = Path(config_yaml)
     load_forge_config = lambda: configure_feedstock._load_forge_config(  # noqa
         config_yaml,
-        exclusive_config_file=os.path.join(
-            config_yaml, "recipe", "default_config.yaml"
+        exclusive_config_file=str(
+            config_yaml_path.joinpath("recipe", "default_config.yaml")
         ),
     )
 
     assert load_forge_config()["recipe_dir"] == "recipe"
 
-    os.unlink(Path(config_yaml) / "conda-forge.yml")
+    Path.unlink(config_yaml_path.joinpath("conda-forge.yml"))
     with pytest.raises(RuntimeError):
         load_forge_config()
 
-    with open(Path(config_yaml) / "conda-forge.yml", "w"):
+    with open(config_yaml_path.joinpath("conda-forge.yml"), "w"):
         pass
     assert load_forge_config()["recipe_dir"] == "recipe"
 
@@ -800,9 +801,9 @@ def test_conda_forge_yaml_empty(config_yaml):
 def test_noarch_platforms_bad_yaml(config_yaml, caplog):
     load_forge_config = lambda: configure_feedstock._load_forge_config(  # noqa
         config_yaml,
-        exclusive_config_file=os.path.join(
+        exclusive_config_file=str(Path(
             config_yaml, "recipe", "default_config.yaml"
-        ),
+        )),
     )
 
     with open(Path(config_yaml) / "conda-forge.yml", "a+") as fp:
@@ -815,23 +816,22 @@ def test_noarch_platforms_bad_yaml(config_yaml, caplog):
 
 
 def test_forge_yml_alt_path(config_yaml):
+    config_yaml_path = Path(config_yaml)
     load_forge_config = (
         lambda forge_yml: configure_feedstock._load_forge_config(  # noqa
             config_yaml,
-            exclusive_config_file=os.path.join(
-                config_yaml, "recipe", "default_config.yaml"
+            exclusive_config_file=str(
+                config_yaml_path.joinpath("recipe", "default_config.yaml")
             ),
             forge_yml=forge_yml,
         )
     )
 
-    forge_yml = Path(config_yaml) / "conda-forge.yml"
-    forge_yml_alt = os.path.join(
-        config_yaml, ".config", "feedstock-config.yml"
-    )
+    forge_yml = config_yaml_path.joinpath("conda-forge.yml")
+    forge_yml_alt = config_yaml_path.joinpath(".config", "feedstock-config.yml")
 
-    os.mkdir(os.path.dirname(forge_yml_alt))
-    Path(forge_yml).rename(forge_yml_alt)
+    forge_yml_alt.parent.mkdir()
+    forge_yml.rename(forge_yml_alt)
 
     with pytest.raises(RuntimeError):
         load_forge_config(None)
