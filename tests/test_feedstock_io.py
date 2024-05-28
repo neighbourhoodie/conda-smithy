@@ -68,15 +68,14 @@ class TestFeedstockIO(unittest.TestCase):
                 self.assertIsInstance(
                     fio.get_repo(pathfunc(tmp_dir)), git.Repo
                 )
-                possible_repo_subdir = os.path.join(
-                    tmp_dir,
-                    "".join(
-                        "%s%s"
-                        % (x, os.path.sep if random.random() > 0.5 else "")
-                        for x in string.ascii_lowercase
-                    ),
+
+                random_path = "".join(
+                    x + ("/" if random.random() > 0.5 else "") 
+                    for x in string.ascii_lowercase
                 )
-                Path(possible_repo_subdir).mkdir(parents=True)
+                
+                possible_repo_subdir = Path(tmp_dir, random_path)
+                possible_repo_subdir.mkdir(parents=True)
                 assert fio.get_repo_root(possible_repo_subdir) == tmp_dir
 
     def test_set_exe_file(self):
