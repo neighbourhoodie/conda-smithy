@@ -347,13 +347,12 @@ def test_render_variant_mismatches(testing_workdir):
     regen_obj(args)
 
     matrix_dir = feedstock_dir.joinpath(".ci_support")
-    cfgs = os.listdir(matrix_dir)
-    assert len(cfgs) == 3  # readme + 2 configs
+    assert len(list(matrix_dir.iterdir())) == 3  # readme + 2 configs
 
-    for _cfg in cfgs:
-        if _cfg == "README":
+    for _cfg in matrix_dir.iterdir():
+        if _cfg.name == "README":
             continue
-        cfg = matrix_dir.joinpath(_cfg)
+        cfg = matrix_dir.joinpath(_cfg.name)
         with open(cfg, "r") as f:
             data = yaml.safe_load(f)
         assert data["a"] == data["b"]
