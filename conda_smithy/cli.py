@@ -1,4 +1,3 @@
-import os
 import logging
 from pathlib import Path
 import subprocess
@@ -29,16 +28,15 @@ if sys.version_info[0] == 2:
 
 
 def default_feedstock_config_path(feedstock_directory):
-    return os.path.join(feedstock_directory, "conda-forge.yml")
+    return str(Path(feedstock_directory, "conda-forge.yml"))
 
 
 def generate_feedstock_content(target_directory, source_recipe_dir):
-    target_directory = os.path.abspath(target_directory)
+    target_directory = Path(target_directory).resolve()
     recipe_dir = "recipe"
-    target_recipe_dir = os.path.join(target_directory, recipe_dir)
+    target_recipe_dir = target_directory.joinpath(recipe_dir)
+    target_recipe_dir.mkdir(parents=True, exist_ok=True)
 
-    if not Path(target_recipe_dir).exists():
-        Path(target_recipe_dir).mkdir(parents=True)
     # If there is a source recipe, copy it now to the right dir
     if source_recipe_dir:
         try:
@@ -56,11 +54,11 @@ def generate_feedstock_content(target_directory, source_recipe_dir):
             fh.write("{}")
 
     # merge in the existing configuration in the source recipe directory
-    forge_yml_recipe = os.path.join(source_recipe_dir, "conda-forge.yml")
+    forge_yml_recipe = Path(source_recipe_dir, "conda-forge.yml")
     yaml = YAML()
-    if Path(forge_yml_recipe).exists():
+    if forge_yml_recipe.exists():
         feedstock_io.remove_file(
-            os.path.join(target_recipe_dir, "conda-forge.yml")
+            target_recipe_dir.joinpath("conda-forge.yml")
         )
         try:
             with open(forge_yml_recipe, "r") as fp:
@@ -503,7 +501,7 @@ class AddAzureBuildId(Subcommand):
         from conda_smithy import azure_ci_utils
 
         owner = args.user or args.organization
-        repo = os.path.basename(os.path.abspath(args.feedstock_directory))
+        repo = Path(args.feedstock_directory).resolve().name
 
         config = azure_ci_utils.AzureConfig(
             org_or_user=owner, project_name=args.project_name
@@ -615,7 +613,7 @@ class RecipeLint(Subcommand):
         all_good = True
         for recipe in args.recipe_directory:
             lints, hints = lint_recipe.main(
-                os.path.join(recipe),
+                Path(recipe),
                 conda_forge=args.conda_forge,
                 return_hints=True,
             )
@@ -781,7 +779,7 @@ class GenerateFeedstockToken(Subcommand):
         )
 
         owner = args.user or args.organization
-        repo = os.path.basename(os.path.abspath(args.feedstock_directory))
+        repo = Path(args.feedstock_directory).resolve().name
 
         if not args.unique_token_per_provider:
             generate_and_write_feedstock_token(owner, repo)
@@ -898,7 +896,7 @@ class RegisterFeedstockToken(Subcommand):
             drone_endpoints = [drone_default_endpoint]
 
         owner = args.user or args.organization
-        repo = os.path.basename(os.path.abspath(args.feedstock_directory))
+        repo = Path(args.feedstock_directory).resolve().name
 
         if args.token_repo is None:
             token_repo = (
@@ -1032,7 +1030,7 @@ class UpdateAnacondaToken(Subcommand):
         from conda_smithy.anaconda_token_rotation import rotate_anaconda_token
 
         owner = args.user or args.organization
-        repo = os.path.basename(os.path.abspath(args.feedstock_directory))
+        repo = Path(args.feedstock_directory).resolve().name
 
         if args.feedstock_config is None:
             args.feedstock_config = default_feedstock_config_path(
