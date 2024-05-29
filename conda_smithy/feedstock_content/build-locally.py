@@ -4,7 +4,6 @@
 # locally.
 #
 import os
-import glob
 from pathlib import Path
 import subprocess
 from argparse import ArgumentParser
@@ -37,7 +36,7 @@ def run_osx_build(ns):
 
 def verify_config(ns):
     valid_configs = {
-        os.path.basename(f)[:-5] for f in glob.glob(".ci_support/*.yaml")
+        f.stem for f in Path(".ci_support").glob("*.yaml")
     }
     print(f"valid configs are {valid_configs}")
     if ns.config in valid_configs:
