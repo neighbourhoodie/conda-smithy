@@ -686,16 +686,17 @@ def test_migrator_downgrade_recipe(
         )
         == 2
     )
+    migration_dir = Path(
+        recipe_migration_cfep9_downgrade.recipe,
+        ".ci_support",
+        "migrations",
+    )
 
-    with open(
-        os.path.join(
-            recipe_migration_cfep9_downgrade.recipe,
-            ".ci_support",
-            "linux_64_python2.7.yaml",
-        )
-    ) as fo:
-        variant = yaml.load(fo)
-        assert variant["zlib"] == ["1000"]
+    for filename in os.listdir(migration_dir):
+        file_path = Path(migration_dir, filename)
+        with open(file_path) as fo:
+            variant = yaml.load(fo)
+            assert variant["zlib"] == ["1000"] if filename == "linux_64_python2.7.yaml" else ["999"]
 
 
 def test_migrator_compiler_version_recipe(
