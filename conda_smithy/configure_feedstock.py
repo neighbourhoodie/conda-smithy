@@ -2326,11 +2326,11 @@ def _load_forge_config(forge_dir, exclusive_config_file, forge_yml=None):
     # Set some more azure defaults
     config["azure"].setdefault("user_or_org", config["github"]["user_or_org"])
 
-    logger.debug("## CONFIGURATION USED ruamel\n")
+    logger.debug("## CONFIGURATION USED\n")
     buffer = io.StringIO()
     ruamel_yaml().dump(config, buffer)
     logger.debug(buffer.getvalue())
-    logger.debug("## END CONFIGURATION ruamel\n")
+    logger.debug("## END CONFIGURATION\n")
 
     if config["provider"]["linux_aarch64"] == "default":
         config["provider"]["linux_aarch64"] = ["travis"]
@@ -2608,10 +2608,6 @@ def get_migrations_in_dir(migrations_root):
             migration_yaml = (
                 yaml.load(contents, Loader=yaml.loader.BaseLoader) or {}
             )
-            # migration_yaml['zlib'] = [str(val) for val in migration_yaml['zlib']]
-            # migration_yaml['migrator_ts'] = str(migration_yaml['migrator_ts'])
-            # print("ALBA MIGRATION")
-            # print(migration_yaml)
             # Use a object as timestamp to not delete it
             ts = migration_yaml.get("migrator_ts", object())
             migration_number = migration_yaml.get("__migrator", {}).get(
