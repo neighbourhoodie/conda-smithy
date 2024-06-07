@@ -1,6 +1,7 @@
 import copy
 import glob
 import hashlib
+import io
 import logging
 import os
 import re
@@ -18,6 +19,8 @@ from itertools import chain, product
 from os import fspath
 from pathlib import Path, PurePath
 import requests
+from ruamel.yaml import YAML as ruamel_yaml
+from collections import OrderedDict
 
 try:
     from builtins import ExceptionGroup
@@ -67,6 +70,8 @@ from . import __version__
 conda_forge_content = os.path.abspath(os.path.dirname(__file__))
 
 logger = logging.getLogger(__name__)
+
+# ruamel = ruamel_yaml(typ='safe')
 
 # feedstocks listed here are allowed to use GHA on
 # conda-forge
@@ -716,6 +721,19 @@ def finalize_config(config, platform, arch, forge_config):
 
     return config
 
+def yaml_represent_ordered_dict(dumper, data):
+    return dumper.represent_dict(data.items())
+
+def represent_set(dumper, data):
+    return dumper.represent_sequence(u'tag:yaml.org,2002:seq', list(data), flow_style=None)
+
+def represent_tuple(dumper, data):
+    return dumper.represent_sequence(u'tag:yaml.org,2002:seq', list(data), flow_style=None)
+
+def represent_ordereddict(dumper, data):
+    print("data in represent_ordereddict",data)
+    return dumper.represent_mapping(u'tag:yaml.org,2002:map', data)
+
 
 def dump_subspace_config_files(
     metas, root_path, platform, arch, upload, forge_config
@@ -739,12 +757,17 @@ def dump_subspace_config_files(
         "collapsed subspace config files: {}".format(pprint.pformat(configs))
     )
 
-    # get rid of the special object notation in the yaml file for objects that we dump
-    yaml.add_representer(set, yaml.representer.SafeRepresenter.represent_list)
-    yaml.add_representer(
-        tuple, yaml.representer.SafeRepresenter.represent_list
-    )
-    yaml.add_representer(OrderedDict, _yaml_represent_ordereddict)
+    # yaml original code
+    # yaml.add_representer(set, yaml.representer.SafeRepresenter.represent_list)
+    # yaml.add_representer(
+    #     tuple, yaml.representer.SafeRepresenter.represent_list
+    # )
+    # yaml.add_representer(OrderedDict, _yaml_represent_ordereddict)
+
+    # ruamel
+    ruamel = ruamel_yaml(typ='safe')
+    ruamel.default_flow_style = False
+    ruamel.Representer.add_representer(OrderedDict, represent_ordereddict)
 
     platform_arch = "{}-{}".format(platform, arch)
 
@@ -773,7 +796,8 @@ def dump_subspace_config_files(
         )
 
         with write_file(out_path) as f:
-            yaml.dump(config, f, default_flow_style=False)
+            # yaml.dump(config, f, default_flow_style=False)
+            ruamel.dump(config, f)
 
         target_platform = config.get("target_platform", [platform_arch])[0]
         result.append(
@@ -788,6 +812,7 @@ def dump_subspace_config_files(
                 ].replace("_", "-"),
             }
         )
+    # pprint.pp(sorted(result, key=lambda x: x["config_name"]))
     return sorted(result, key=lambda x: x["config_name"])
 
 
@@ -1836,7 +1861,11 @@ def _azure_specific_setup(jinja_env, forge_config, forge_dir, platform):
         azure_settings["strategy"]["matrix"][data["config_name"]] = config_rendered
         # fmt: on
 
-    forge_config["azure_yaml"] = yaml.dump(azure_settings)
+    # forge_config["azure_yaml"] = yaml.dump(azure_settings)
+    
+    buffer = io.StringIO()
+    ruamel_yaml(typ='safe').dump(azure_settings, buffer)
+    forge_config["azure_yaml"] = buffer.getvalue()
     _render_template_exe_files(
         forge_config=forge_config,
         jinja_env=jinja_env,
@@ -2041,7 +2070,8 @@ def render_README(jinja_env, forge_config, forge_dir, render_info=None):
                 variant_name, _ = os.path.splitext(filename)
                 variants.append(variant_name)
                 with open(os.path.join(ci_support_path, filename)) as fh:
-                    data = yaml.safe_load(fh)
+                    # data = yaml.safe_load(fh)
+                    data = ruamel_yaml(typ='safe').load(fh)
                     channel_targets.append(
                         data.get("channel_targets", ["conda-forge main"])[0]
                     )
@@ -2098,7 +2128,10 @@ def render_README(jinja_env, forge_config, forge_dir, render_info=None):
             azure_build_id_from_token(forge_config)
 
     logger.debug("README")
-    logger.debug(yaml.dump(forge_config))
+    # logger.debug(yaml.dump(forge_config))
+    buffer = io.StringIO()
+    ruamel_yaml(typ='safe').dump(forge_config, buffer)
+    logger.debug(buffer.getvalue())
 
     with write_file(target_fname) as fh:
         fh.write(template.render(**forge_config))
@@ -2160,7 +2193,8 @@ def _update_dict_within_dict(items, config):
 def _read_forge_config(forge_dir, forge_yml=None):
     # Load default values from the conda-forge.yml file
     with open(CONDA_FORGE_YAML_DEFAULTS_FILE, "r") as fh:
-        default_config = yaml.safe_load(fh.read())
+        # default_config = yaml.safe_load(fh.read())
+        default_config = ruamel_yaml(typ='safe').load(fh.read())
 
     if forge_yml is None:
         forge_yml = os.path.join(forge_dir, "conda-forge.yml")
@@ -2175,7 +2209,8 @@ def _read_forge_config(forge_dir, forge_yml=None):
         )
 
     with open(forge_yml, "r") as fh:
-        documents = list(yaml.safe_load_all(fh))
+        # documents = list(yaml.safe_load_all(fh))
+        documents = list(ruamel_yaml(typ='safe').load_all(fh))
         file_config = (documents or [None])[0] or {}
 
     # Validate loaded configuration against a JSON schema.
@@ -2326,10 +2361,16 @@ def _load_forge_config(forge_dir, exclusive_config_file, forge_yml=None):
     # Set some more azure defaults
     config["azure"].setdefault("user_or_org", config["github"]["user_or_org"])
 
-    log = yaml.safe_dump(config)
-    logger.debug("## CONFIGURATION USED\n")
-    logger.debug(log)
-    logger.debug("## END CONFIGURATION\n")
+    # log = yaml.safe_dump(config)
+    # logger.debug("## CONFIGURATION USED\n")
+    # logger.debug(log)
+    # logger.debug("## END CONFIGURATION\n")
+    
+    logger.debug("## CONFIGURATION USED ruamel\n")
+    buffer = io.StringIO()
+    ruamel_yaml().dump(config, buffer)
+    logger.debug(buffer.getvalue())
+    logger.debug("## END CONFIGURATION ruamel\n")
 
     if config["provider"]["linux_aarch64"] == "default":
         config["provider"]["linux_aarch64"] = ["travis"]
@@ -2606,7 +2647,12 @@ def get_migrations_in_dir(migrations_root):
             contents = f.read()
             migration_yaml = (
                 yaml.load(contents, Loader=yaml.loader.BaseLoader) or {}
+                # ruamel.load(contents) or {}
             )
+            # migration_yaml['zlib'] = [str(val) for val in migration_yaml['zlib']]
+            # migration_yaml['migrator_ts'] = str(migration_yaml['migrator_ts'])
+            # print("ALBA MIGRATION")
+            # print(migration_yaml)
             # Use a object as timestamp to not delete it
             ts = migration_yaml.get("migrator_ts", object())
             migration_number = migration_yaml.get("__migrator", {}).get(
