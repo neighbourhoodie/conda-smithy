@@ -95,7 +95,7 @@ def test_ordering():
     # raise Exception()
 
 
-def test_no_ordering():
+def test_no_ordering(snapshot):
     start = parse_variant(
         dedent(
             """\
@@ -121,11 +121,12 @@ def test_no_ordering():
 
     res = variant_add(start, mig_compiler)
     assert res["xyz"] == ["2"]
+    assert res == snapshot(name="variant_add_res_xyz")
     print(res)
     # raise Exception()
 
 
-def test_ordering_downgrade():
+def test_ordering_downgrade(snapshot):
     start = parse_variant(
         dedent(
             """\
@@ -151,10 +152,11 @@ def test_ordering_downgrade():
 
     res = variant_add(start, mig_compiler)
     assert res["jpeg"] == ["2.0"]
+    assert res == snapshot(name="variant_add_res_jpeg")
     print(res)
 
 
-def test_ordering_space():
+def test_ordering_space(snapshot):
     start = parse_variant(
         dedent(
             """\
@@ -175,10 +177,11 @@ def test_ordering_space():
 
     res = variant_add(start, mig_compiler)
     assert res["python"] == ["2.7 *_cpython"]
+    assert res == snapshot(name="variant_add_res_python")
     print(res)
 
 
-def test_new_pinned_package():
+def test_new_pinned_package(snapshot):
     start = parse_variant(
         dedent(
             """\
@@ -206,10 +209,11 @@ def test_new_pinned_package():
     res = variant_add(start, mig_compiler)
     assert res["gprc-cpp"] == ["1.23"]
     assert res["pin_run_as_build"]["gprc-cpp"]["max_pin"] == "x.x"
+    assert res == snapshot(name="variant_add_res_pin")
     print(res)
 
 
-def test_zip_keys():
+def test_zip_keys(snapshot):
     start = parse_variant(
         dedent(
             """\
@@ -244,9 +248,10 @@ def test_zip_keys():
 
     assert len(res["zip_keys"]) == 3
     assert ["python", "vc", "vc_runtime"] in res["zip_keys"]
+    assert res == snapshot(name="variant_add_res_python_vc")
 
 
-def test_migrate_windows_compilers():
+def test_migrate_windows_compilers(snapshot):
     start = parse_variant(
         dedent(
             """
@@ -282,9 +287,10 @@ def test_migrate_windows_compilers():
     assert len(res["c_compiler"]) == 2
     assert res["c_compiler"] == ["vs2008", "vs2017"]
     assert len(res["zip_keys"][0]) == 2
+    assert res == snapshot(name="variant_add_res_c_compiler")
 
 
-def test_pin_run_as_build():
+def test_pin_run_as_build(snapshot):
     start = parse_variant(
         dedent(
             """\
@@ -313,9 +319,10 @@ def test_pin_run_as_build():
     print(res)
 
     assert len(res["pin_run_as_build"]) == 3
+    assert res == snapshot(name="variant_add_res")
 
 
-def test_py39_migration():
+def test_py39_migration(snapshot):
     """Test that running the python 3.9 keyadd migrator has the desired effect."""
     base = parse_variant(
         dedent(
@@ -399,6 +406,8 @@ def test_py39_migration():
     print(res2)
 
     assert res2["python"] == migration_py39["__migrator"]["ordering"]["python"]
+    assert res2 == snapshot(name="variant_add_res2_python")
+
     # assert that we've ordered the numpy bits properly
     assert res2["numpy"] == [
         "1.16",
@@ -418,9 +427,10 @@ def test_py39_migration():
     ]
     # The base doesn't have an entry for numpy
     assert "numpy" not in res3
+    assert res3 == snapshot(name="variant_add_res3_numpy")
 
 
-def test_multiple_key_add_migration():
+def test_multiple_key_add_migration(snapshot):
     """Test that running the python 3.9 keyadd migrator has the desired effect."""
     base = parse_variant(
         dedent(
@@ -517,6 +527,7 @@ def test_multiple_key_add_migration():
         "1.16",
         "1.18",
     ]
+    assert res2 == snapshot(name="variant_add_res2")
 
     res3 = variant_add(base, migration_py39)
     print(res3)
@@ -529,6 +540,7 @@ def test_multiple_key_add_migration():
     ]
     # The base doesn't have an entry for numpy
     assert "numpy" not in res3
+    assert res3 == snapshot(name="variant_add_res3_numpy")
 
 
 def test_variant_key_remove():
@@ -584,7 +596,7 @@ def test_variant_key_remove():
 @pytest.mark.parametrize(
     "platform,arch", [["osx", "64"], ["osx", "arm64"], ["linux", "64"]]
 )
-def test_variant_remove_add(platform, arch):
+def test_variant_remove_add(platform, arch, snapshot):
     from conda_build.config import Config
 
     config = Config(platform=platform, arch=arch)
@@ -687,9 +699,11 @@ def test_variant_remove_add(platform, arch):
     res2 = variant_add(base, remove2)
     res2 = variant_add(res2, add_py39)
     assert res2 == res
+    assert res2 == snapshot(name="variant_add_res2")
 
     if (platform, arch) == ("osx", "arm64"):
         assert res["python"] == ["3.9.* *_cpython"]
+        assert res == snapshot(name="variant_add_res_python")
     elif (platform, arch) in {("osx", "64"), ("linux", "64")}:
         assert res["python"] == [
             "3.6.* *_73_pypy",
@@ -697,5 +711,6 @@ def test_variant_remove_add(platform, arch):
             "3.8.* *_cpython",
             "3.9.* *_cpython",
         ]
+        assert res == snapshot(name="variant_add_res_python")
     else:
         raise RuntimeError("Should have a check")
