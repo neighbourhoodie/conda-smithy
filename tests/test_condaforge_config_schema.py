@@ -55,8 +55,8 @@ SAMPLE_CONFIGS = [
 @pytest.mark.parametrize("config_dict", SAMPLE_CONFIGS)
 def test_config_model_validation(config_dict, snapshot):
     config = ConfigModel(**config_dict)
-    assert config
-    assert config == snapshot # Ensure the configuration is valid
+    assert config # Ensure the configuration is valid
+    assert config == snapshot
 
 
 def test_class_init(snapshot):
