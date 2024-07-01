@@ -64,6 +64,7 @@ def test_feedstock_tokens_roundtrip(
     retval_ci,
     expires_at,
     retval_time,
+    snapshot,
 ):
     gh_mock.return_value = "abc123"
     tmp_mock.TemporaryDirectory.return_value.__enter__.return_value = str(
@@ -109,6 +110,9 @@ def test_feedstock_tokens_roundtrip(
 
     assert retval is (retval_ci and retval_time)
 
+    # Snapshot assertion for token data and feedstock token
+    assert token_data == snapshot(name="token_data")
+    assert feedstock_token == snapshot(name="feedstock_token")
 
 @pytest.mark.parametrize("ci", [None, "azure"])
 @pytest.mark.parametrize("project", ["bar", "bar-feedstock"])
@@ -126,6 +130,7 @@ def test_is_valid_feedstock_token_nofile(
     repo,
     project,
     ci,
+    snapshot,
 ):
     gh_mock.return_value = "abc123"
     tmp_mock.TemporaryDirectory.return_value.__enter__.return_value = str(
@@ -138,7 +143,8 @@ def test_is_valid_feedstock_token_nofile(
         user, project, feedstock_token, repo, provider=ci
     )
     assert not retval
-
+    # Snapshot assertion for the return value
+    assert retval == snapshot(name="retval")
 
 @pytest.mark.parametrize(
     "provider,ci",
@@ -171,6 +177,7 @@ def test_is_valid_feedstock_token_badtoken(
     expires_at,
     provider,
     ci,
+    snapshot,
 ):
     gh_mock.return_value = "abc123"
     tmp_mock.TemporaryDirectory.return_value.__enter__.return_value = str(
@@ -194,10 +201,12 @@ def test_is_valid_feedstock_token_badtoken(
         user, project, feedstock_token, repo, provider=ci
     )
     assert not retval
+    # Snapshot assertion for the return value
+    assert retval == snapshot(name="retval")
 
 
 @pytest.mark.parametrize("ci", [None, "azure"])
-def test_generate_and_write_feedstock_token(ci):
+def test_generate_and_write_feedstock_token(ci, snapshot):
     user = "bar"
     repo = "foo"
 
@@ -228,9 +237,12 @@ def test_generate_and_write_feedstock_token(ci):
         if os.path.exists(opth):
             os.remove(opth)
 
+    # Snapshot assertion for the file paths and existence
+    assert os.path.exists(pth) == snapshot(name="path_exists")
+    assert os.path.exists(opth) == snapshot(name="other_path_exists")
 
 @pytest.mark.parametrize("ci", [None, "azure"])
-def test_read_feedstock_token(ci):
+def test_read_feedstock_token(ci, snapshot):
     user = "bar"
     repo = "foo"
     if ci:
@@ -242,6 +254,8 @@ def test_read_feedstock_token(ci):
     token, err = read_feedstock_token(user, repo, provider=ci)
     assert "No token found in" in err
     assert token is None
+    assert token == snapshot(name="token")
+    assert err == snapshot(name="err")
 
     # empty
     try:
@@ -249,6 +263,8 @@ def test_read_feedstock_token(ci):
         token, err = read_feedstock_token(user, repo, provider=ci)
         assert "Empty token found in" in err
         assert token is None
+        assert token == snapshot(name="token")
+        assert err == snapshot(name="err")
     finally:
         if os.path.exists(pth):
             os.remove(pth)
@@ -266,6 +282,8 @@ def test_read_feedstock_token(ci):
             token, err = read_feedstock_token(user, repo, provider="azure")
         assert "No token found in" in err
         assert token is None
+        assert token == snapshot(name="token")
+        assert err == snapshot(name="err")
     finally:
         if os.path.exists(pth):
             os.remove(pth)
@@ -317,6 +335,7 @@ def test_feedstock_token_exists(
     retval_ci,
     expires_at,
     retval_time,
+    snapshot,
 ):
     gh_mock.return_value = "abc123"
     tmp_mock.TemporaryDirectory.return_value.__enter__.return_value = str(
@@ -338,7 +357,12 @@ def test_feedstock_token_exists(
 
     _retval = file_exists and retval_time and retval_ci
 
+    assert file_exists == snapshot(name="file_exists")
+    assert retval_time == snapshot(name="retval_time")
+    assert retval_ci == snapshot(name="retval_ci")
+
     assert feedstock_token_exists(user, project, repo, provider=ci) is _retval
+    assert _retval == snapshot(name="_retval")
 
     git_mock.Repo.clone_from.assert_called_once_with(
         "abc123",
@@ -356,7 +380,7 @@ def test_feedstock_token_exists(
 @mock.patch("conda_smithy.feedstock_tokens.git")
 @mock.patch("conda_smithy.github.gh_token")
 def test_feedstock_token_raises(
-    gh_mock, git_mock, tmp_mock, tmpdir, repo, project, ci
+    gh_mock, git_mock, tmp_mock, tmpdir, repo, project, ci, snapshot
 ):
     gh_mock.return_value = "abc123"
     tmp_mock.TemporaryDirectory.return_value.__enter__.return_value = str(
@@ -373,6 +397,7 @@ def test_feedstock_token_raises(
         feedstock_token_exists(user, project, repo, provider=ci)
 
     assert "Testing for the feedstock token for" in str(e.value)
+    assert str(e.value) == snapshot(name="token_error_message")
 
     git_mock.Repo.clone_from.assert_called_once_with(
         "abc123",
@@ -399,6 +424,7 @@ def test_register_feedstock_token_works(
     tmpdir,
     repo,
     ci,
+    snapshot,
 ):
     gh_mock.return_value = "abc123"
     tmp_mock.TemporaryDirectory.return_value.__enter__.return_value = str(
@@ -450,8 +476,8 @@ def test_register_feedstock_token_works(
         data["provider"] = ci
 
     with open(token_json_pth, "r") as fp:
-        assert json.load(fp) == {"tokens": [data]}
-
+        assert json.load(fp) == snapshot
+    assert data == snapshot(name="data")
 
 @pytest.mark.parametrize("ci", [None, "azure"])
 @pytest.mark.parametrize(
@@ -471,6 +497,7 @@ def test_register_feedstock_token_notoken(
     tmpdir,
     repo,
     ci,
+    snapshot,
 ):
     gh_mock.return_value = "abc123"
     tmp_mock.TemporaryDirectory.return_value.__enter__.return_value = str(
@@ -507,6 +534,8 @@ def test_register_feedstock_token_notoken(
     assert not os.path.exists(token_json_pth)
 
     assert "No token found in" in str(e.value)
+    assert os.path.exists(token_json_pth) == snapshot(name="token_file_exists")
+    assert str(e.value) == snapshot(name="token_error_message")
 
 
 @pytest.mark.parametrize("ci", [None, "azure"])
@@ -527,6 +556,7 @@ def test_register_feedstock_token_append(
     tmpdir,
     repo,
     ci,
+    snapshot
 ):
     gh_mock.return_value = "abc123"
     tmp_mock.TemporaryDirectory.return_value.__enter__.return_value = str(
@@ -578,7 +608,8 @@ def test_register_feedstock_token_append(
         data["provider"] = ci
 
     with open(token_json_pth, "r") as fp:
-        assert json.load(fp) == {"tokens": [1, data]}
+        assert json.load(fp) == snapshot
+    assert data == snapshot(name="data")
 
 
 @pytest.mark.parametrize("unique_token_per_provider", [False, True])
@@ -608,6 +639,7 @@ def test_register_feedstock_token_with_providers(
     github_actions,
     clobber,
     unique_token_per_provider,
+    snapshot,
 ):
     user = "foo"
     project = "bar"
@@ -654,6 +686,7 @@ def test_register_feedstock_token_with_providers(
                 clobber,
                 drone_default_endpoint,
             )
+            assert feedstock_token == snapshot(name="feedstock_token")
         else:
             drone_mock.assert_not_called()
 
@@ -668,6 +701,7 @@ def test_register_feedstock_token_with_providers(
             circle_mock.assert_called_once_with(
                 user, project, feedstock_token, clobber
             )
+            assert feedstock_token == snapshot(name="feedstock_token")
         else:
             circle_mock.assert_not_called()
 
@@ -682,6 +716,7 @@ def test_register_feedstock_token_with_providers(
             travis_mock.assert_called_once_with(
                 user, project, feedstock_token, clobber
             )
+            assert feedstock_token == snapshot(name="feedstock_token")
         else:
             travis_mock.assert_not_called()
 
@@ -696,6 +731,7 @@ def test_register_feedstock_token_with_providers(
             azure_mock.assert_called_once_with(
                 user, project, feedstock_token, clobber
             )
+            assert feedstock_token == snapshot(name="feedstock_token")
         else:
             azure_mock.assert_not_called()
 
@@ -710,6 +746,7 @@ def test_register_feedstock_token_with_providers(
             github_actions_mock.assert_called_once_with(
                 user, project, feedstock_token, clobber
             )
+            assert feedstock_token == snapshot(name="feedstock_token")
         else:
             github_actions_mock.assert_not_called()
     finally:
@@ -746,6 +783,7 @@ def test_register_feedstock_token_with_providers_notoken(
     github_actions,
     clobber,
     unique_token_per_provider,
+    snapshot,
 ):
     user = "foo"
     project = "bar"
@@ -765,6 +803,7 @@ def test_register_feedstock_token_with_providers_notoken(
             )
 
         assert "No token" in str(e.value)
+        assert str(e.value) == snapshot(name="token_error_message")
 
     drone_mock.assert_not_called()
     circle_mock.assert_not_called()
@@ -792,6 +831,7 @@ def test_register_feedstock_token_with_providers_error(
     drone_mock,
     provider,
     unique_token_per_provider,
+    snapshot,
 ):
     user = "foo"
     project = "bar-feedstock"
@@ -830,6 +870,7 @@ def test_register_feedstock_token_with_providers_error(
             )
 
         assert "on %s" % provider in str(e.value)
+        assert str(e.value) == snapshot(name="token_error_message")
     finally:
         for _provider in providers:
             pth = feedstock_token_local_path(user, project, provider=_provider)
