@@ -1,6 +1,5 @@
 import pytest
 from pydantic import ValidationError
-import yaml
 from conda_smithy.schema import ConfigModel
 
 
@@ -54,17 +53,19 @@ SAMPLE_CONFIGS = [
 
 
 @pytest.mark.parametrize("config_dict", SAMPLE_CONFIGS)
-def test_config_model_validation(config_dict):
+def test_config_model_validation(config_dict, snapshot):
     config = ConfigModel(**config_dict)
-    assert config  # Ensure the configuration is valid
+    assert config
+    assert config == snapshot # Ensure the configuration is valid
 
 
-def test_class_init():
+def test_class_init(snapshot):
     config = ConfigModel()
     assert config
+    assert config == snapshot
 
 
-def test_extra_fields():
+def test_extra_fields(snapshot):
     config_dict = {
         "extra_field": "extra_value",
         "github": {
@@ -76,5 +77,7 @@ def test_extra_fields():
             "pkg_format": 2,
         },
     }
-    with pytest.raises(ValidationError):
+    try:
         config = ConfigModel(**config_dict)
+    except ValidationError as errorMessage:
+        assert errorMessage == snapshot
